@@ -2,7 +2,7 @@
 
 # Usage # 
 
-<bash ./bash/pbp_gene_extraction.sh gff_list fasta_list out_csv_name.csv>
+'bash ./bash/pbp_gene_extraction.sh gff_list.txt fasta_list.txt out_csv_name.csv'
 
 Hopefully this works
 
