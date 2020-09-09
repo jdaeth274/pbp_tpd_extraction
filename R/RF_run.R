@@ -613,10 +613,10 @@ whole_aa_data_sample <- read.csv(file = "~/Dropbox/phd/cdc_mic_predictions/all_i
                                stringsAsFactors = TRUE)
 
 ## Ensure T & F treated as characters not boolean
-whole_aa_data_pmen <- true_changer(whole_aa_data_pmen)
+whole_aa_data_sample <- true_changer(whole_aa_data_sample)
 
 ## Remove any missing values 
-whole_aa_data <- na.omit(whole_aa_data_pmen)
+whole_aa_data <- na.omit(whole_aa_data_sample)
 
 
 cdc_data <- read.csv("./data/cdc_seqs_df.csv")
