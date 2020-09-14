@@ -619,17 +619,10 @@ whole_aa_data_sample <- read.csv(file = test_set,
                                stringsAsFactors = TRUE)
 
 ## Ensure T & F treated as characters not boolean
-<<<<<<< HEAD
-whole_aa_data <- true_changer(whole_aa_data_sample)
-=======
 whole_aa_data_sample <- true_changer(whole_aa_data_sample)
 
-## Remove any missing values 
-whole_aa_data <- na.omit(whole_aa_data_sample)
->>>>>>> 48d8576a7568bbdbc58c44b07eb9076ff73b801b
-
 ## Remove any isolates with missing values 
-whole_aa_data <- whole_aa_data[complete.cases(whole_aa_data),]
+whole_aa_data <- whole_aa_data_sample[complete.cases(whole_aa_data),]
 
 cdc_data <- read.csv(training_set)
 
