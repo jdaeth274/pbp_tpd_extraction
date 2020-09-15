@@ -644,5 +644,7 @@ cdc_preds <- rf_model_fitter(cdc_data_no_isolate,test_data = whole_aa_data,
 
 predicted_categories <- cdc_preds$valid_preds
 
+# Save output
 
+save(cdc_preds,file='cdc_predictions.Robj')
 
