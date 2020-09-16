@@ -36,10 +36,15 @@ then
   ls -d $PWD/*pbp2b.prot > pbp2b_prot_list
   ls -d $PWD/*pbp2x.prot > pbp2x_prot_list
 
-  ## Lets run the Rscript
+  ## Lets run the Rscript to create the AA df
 
   Rscript --vanilla "${rdir}AA_df_creator.R" \
-  pbp1a_prot_list pbp2b_prot_list pbp2x_prot_list $3
+  pbp1a_prot_list pbp2b_prot_list pbp2x_prot_list aa_df.csv
+
+  ## Lets run the Rscript to predict the cats for the model
+  Rscript --vanilla "${rdir}RF_run.R" \
+  aa_df.csv "${datadir}cdc_seqs_df.csv" 3 $3
+
 fi
 
 

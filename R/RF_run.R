@@ -1,23 +1,21 @@
 ###############################################################################
 ## Run RF on cdc aa data ######################################################
 ###############################################################################
-
-
-require(randomForest)
-require(seqinr)
-require(protr)
-require(BiocManager)
+require(randomForest, quietly = TRUE)
+require(seqinr, quietly = TRUE)
+require(protr, quietly = TRUE)
+require(BiocManager, quietly = TRUE)
 if(!("Biostrings" %in% rownames(installed.packages())))
   BiocManager::install("Biostrings")
-require(Biostrings)
-require(ape)
-require(dplyr)
-require(tibble)
-require(ggplot2)
-require(tidyr)
-require(tictoc)
-require(reshape2)
-require(ranger)
+require(Biostrings, quietly = TRUE)
+require(ape, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+require(tibble, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(tidyr, quietly = TRUE)
+require(tictoc, quietly = TRUE)
+require(reshape2, quietly = TRUE)
+require(ranger, quietly = TRUE)
 
 ###############################################################################
 ## First we'll code out the functions required ################################
@@ -91,9 +89,10 @@ blossy_changer <- function(validation, training_purp, blossy){
   # 
   
   changed_row <- NULL
-  
+    
   
   for (k in 1:(ncol(validation) - 1)){
+
     num_changed <- 0
     validation[,k] <- droplevels(validation[,k])
     current_col <- training_purp[,k]
@@ -622,7 +621,7 @@ whole_aa_data_sample <- read.csv(file = test_set,
 whole_aa_data_sample <- true_changer(whole_aa_data_sample)
 
 ## Remove any isolates with missing values 
-whole_aa_data <- whole_aa_data_sample[complete.cases(whole_aa_data),]
+whole_aa_data <- whole_aa_data_sample[complete.cases(whole_aa_data_sample),]
 
 cdc_data <- read.csv(training_set)
 
@@ -638,11 +637,16 @@ cdc_data_no_isolate <- cdc_data[, -1]
 cdc_data_no_isolate$mic <- log(cdc_data_no_isolate$mic, base = 2)
 
 ## Test on CDC data only 
+cat("Testing on CDC data", "\n")
 cdc_known_mic <- rf_model_fitter(cdc_data_no_isolate, ranger_use = TRUE,
-                                 categories = number_of_categories)
+                                categories = number_of_categories)
+
+## narrowing down test data 
+cat("\n","Running on input data","\n")
+test_data <- whole_aa_data[,grepl("__",colnames(whole_aa_data))]
 
 ## Predict Unknown data now
-cdc_preds <- rf_model_fitter(cdc_data_no_isolate,test_data = whole_aa_data,
+cdc_preds <- rf_model_fitter(cdc_data_no_isolate,test_data = test_data,
                              ranger_use = TRUE, categories = number_of_categories)
 
 ### Predicted categories for penicillin below

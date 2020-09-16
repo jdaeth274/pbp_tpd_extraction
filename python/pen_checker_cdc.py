@@ -61,22 +61,30 @@ def get_options():
     
     return args
 
-def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
+def search_for_gene(ref_in,name,gene_length,tol,correct_length):
 
     if not correct_length:
         gene_row = ref_in['attributes'].str.contains(name)
         gene_row_indy = gene_row.where(gene_row == True)
         gene_row_indy = gene_row_indy.index[gene_row_indy == True].tolist()
-        gene_rower = ref_gff_tsv.iloc[gene_row_indy]
+        ## If multiple paralogs with _ this just assumes the first found is the correct gene.
+        if len(gene_row_indy) > 1:
+            gene_row_indy = [gene_row_indy[0]]
+        if not gene_row_indy == False:
+            gene_rower = ref_in.iloc[gene_row_indy]
         if gene_rower.empty == False:
-            gene_len = [abs(int(gene_rower.iloc[0,4]) - int(gene_rower.iloc[0,3]))]
+            if isinstance(gene_rower, pandas.Series):
+                gene_len = [abs(int(gene_rower.iloc[4]) - int(gene_rower.iloc[3]))]
+                gene_rower = gene_rower.to_frame().reset_index()
+            else:
+                gene_len = [abs(int(gene_rower.iloc[0,4]) - int(gene_rower.iloc[0,3]))]
 
             overhang = [gene_length - tol, gene_length + tol]
 
             if overhang[0] <= gene_len[0] <= overhang[1]:
                 correct_length = True
             else:
-                sys.stderr.write('Found gene' + name + ' but wrong length: ' + str(gene_len[0]) + ', expected: ' + str(gene_length) + '\n')
+                sys.stderr.write('Found gene ' + name + ' but wrong length: ' + str(gene_len[0]) + ', expected: ' + str(gene_length) + '\n')
 
     return correct_length,gene_rower
 
@@ -138,18 +146,18 @@ if __name__ == '__main__':
         correct_length = False
         for gene in all_gene_names:
             if not correct_length:
-                print('Searching for name ' + gene)
-                correct_length,gene_rower = search_for_gene(ref_gff_tsv,gene,gene_length,files_for_input.tolerance,correct_length,gene_rower)
-                if correct_length:
-                    sys.stderr.write('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
+                #print('Searching for name ' + gene)
+                correct_length,gene_rower = search_for_gene(ref_gff_tsv,gene,gene_length,files_for_input.tolerance,correct_length)
+                #if correct_length:
+                #    sys.stderr.write('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
 
         if gene_rower.empty:
             
             print("No gene hit in this file:", bassio_nameo)
         else:
             bassio_nameo = os.path.basename(gff_lines[k])
-
             contig_num = gene_rower.iloc[0,0]
+
             gene_start = int(gene_rower.iloc[0,3])
             gene_end = int(gene_rower.iloc[0,4])
             strand = str(gene_rower.iloc[0, 6])
