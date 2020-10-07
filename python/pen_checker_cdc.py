@@ -10,7 +10,7 @@ import os
 import sys
 import argparse
 import subprocess
-
+import time
 #############
 # FUNCTIONS #
 #############
@@ -56,6 +56,7 @@ def get_options():
     parser.add_argument('--aln', required=True, help='Gene alignment  (required)', type = str)
     parser.add_argument('--tlength', required=True, help='Target length of TPD domain  (required)', type = int)
     parser.add_argument('--tolerance', help='Deviation from expected length allowed', type = int, default = 10)
+    parser.add_argument('--data_dir', help='Location of the data directory of package', type = str, default="./data")
     parser.add_argument('--output', required=True, help='Prefix of output files  (required)', type = str)
 
     args = parser.parse_args()
@@ -91,18 +92,24 @@ def get_aln_pos_from_ref(hmm_aln,pos):
         ref_pos = ref_pos + 1
     return(ref_pos - 1)
 
-def hmm_search_for_gene(fasta,gene):
+def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     
     # data structure
     readingframes = []
     
     # from https://www.biostars.org/p/183616/
     # load sequence
+
+    tic_aa_creator = time.perf_counter()
+
     for record in SeqIO.parse(fasta, "fasta"):
-    
-        # process file name
-        gff_base = gff.replace('.gff','')
-        
+
+
+        # process file name expecting no extra .
+        gff_base = os.path.basename(fasta)
+        gff_base = re.sub("\..*[a-z,A-Z,0-9].*$","",gff_base)
+        aa_base_name = aa_dir_name + "/" + gff_base
+
         # Create three reading frames in forward direction, offset 0, 1, 2
         record_rc = record.reverse_complement()
         readingframes.extend([Seq.translate(record.seq[i:], table='Standard', stop_symbol='*', to_stop=False, cds=False) for i in range(3)])
@@ -116,21 +123,26 @@ def hmm_search_for_gene(fasta,gene):
 
         #Use PotentialORFs.txt as output, can be changed
         #Write length and translation to file
-        with open(gff_base + '.aa', 'w') as output:
+        with open(aa_base_name + '.aa', 'w') as output:
             for n,peptide in enumerate(results):
                 output.write(">{}\n{}\n".format('peptide_' + str(n), peptide))
-    
+
+    toc_aa_creator = time.perf_counter()
+
+    tic_hmm_run = time.perf_counter()
     # run HMM
-    hmm_output_fn = gff_base + '.' + gene + '.hsp.out'
+    hmm_output_fn = aa_base_name + '.' + gene + '.hsp.out'
     hmm_proc_out = 1
     while hmm_proc_out != 0:
-        hmm_proc_out = subprocess.check_call('hmmsearch ./data/' + gene + '.hmm ' + gff_base + '.aa > ' + hmm_output_fn, shell = True)
+        hmm_proc_out = subprocess.check_call('hmmsearch ' + data_dir + gene + '.hmm ' + aa_base_name + '.aa > ' + hmm_output_fn, shell = True)
     
     # parse HMM
     hmm_output = list(SearchIO.parse(hmm_output_fn, 'hmmer3-text'))
     hmm_best_hsp = hmm_output[0][0][0]
     hmm_aln = hmm_best_hsp.aln
     subprocess.call('rm ' + hmm_output_fn, shell = True)
+
+    toc_hmm_run = time.perf_counter()
 
     if gene == 'folP':
         aln_start = get_aln_pos_from_ref(hmm_aln,57)
@@ -141,8 +153,10 @@ def hmm_search_for_gene(fasta,gene):
         
         if gap_count > -2:
             print(gff_base + '\tSulphamethoxazole resistant')
+            status = "R"
         else:
             print(gff_base + '\tSulphamethoxazole sensitive')
+            status = "S"
     
     elif gene == 'dhfR':
         aln_start = get_aln_pos_from_ref(hmm_aln,98)
@@ -152,10 +166,18 @@ def hmm_search_for_gene(fasta,gene):
         
         if hmm_match == "L":
             print(gff_base + '\tTrimethoprim resistant')
+            status = "R"
         elif hmm_match == "I":
             print(gff_base + '\tTrimethoprim sensitive')
+            status = "S"
         else:
             print(gff_base + '\tTrimethoprim unknown')
+            status = "NA"
+
+    print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
+    print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
+
+    return status, gff_base
 
 def extract_fasta_from_gff(gff_fn):
 
@@ -242,7 +264,12 @@ if __name__ == '__main__':
     input_gene_names.append(gene_name.lower())
     all_gene_names = set(input_gene_names)
     gene_length = files_for_input.tlength
-    
+
+    if files_for_input.pbp not in ['pbp1a','pbp2b','pbp2x']:
+        aa_dir_name = "./" + re.sub(".csv","",files_for_input.output) + "_aa_dir"
+        os.mkdir(aa_dir_name)
+        all_gene_names = [files_for_input.pbp]
+
     ###############################################################################
     ## So we've loaded up our collection of fastas and our gffs collection, at ####
     ## the moment these is lined up to work with contig files, as the gff annots ##
@@ -265,11 +292,12 @@ if __name__ == '__main__':
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
                                              'attributes'],
                                       header=None)
+
         gene_rower = None
         correct_length = False
         for gene in all_gene_names:
             if not correct_length:
-                print('Searching for name ' + gene)
+                #print('Searching for name ' + gene)
                 if files_for_input.pbp in ['pbp1a','pbp2b','pbp2x']:
                     correct_length,gene_rower = search_for_gene(ref_gff_tsv,
                                                                 gene,
@@ -278,10 +306,17 @@ if __name__ == '__main__':
                                                                 correct_length,
                                                                 gene_rower)
                 else:
-                    hmm_search_for_gene(fasta_file, files_for_input.pbp)
-                    exit(0)
+
+                    current_res, current_isolate = hmm_search_for_gene(fasta_file, files_for_input.pbp, aa_dir_name, files_for_input.data_dir)
+                    gene_id.append(current_res)
+                    isolate_name.append(current_isolate)
+                    skip = True
+                    continue
                 if correct_length:
                     sys.stderr.write('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
+
+        if skip:
+            continue
 
         if gene_rower.empty:
             
@@ -381,7 +416,11 @@ if __name__ == '__main__':
 
     out_df = pandas.DataFrame()
     out_df['isolate_id'] = pandas.Series(isolate_name)
-    out_df['top_id'] = pandas.Series(gene_id, index=out_df.index)
+    if files_for_input.pbp in ['pbp1a','pbp2b','pbp2x']:
+        out_df['top_id'] = pandas.Series(gene_id, index=out_df.index)
+    else:
+        out_df['Resistance'] = pandas.Series(gene_id, index=out_df.index)
+        subprocess.call("rm -r *_aa_dir", shell=True)
 
     # rm_command = "rm " + protein_fasta + " " + protein_csv
     # os.system(rm_command)
