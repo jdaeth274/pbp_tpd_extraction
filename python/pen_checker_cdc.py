@@ -134,11 +134,19 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     hmm_output_fn = aa_base_name + '.' + gene + '.hsp.out'
     hmm_proc_out = 1
     while hmm_proc_out != 0:
-        hmm_proc_out = subprocess.check_call('hmmsearch ' + data_dir + gene + '.hmm ' + aa_base_name + '.aa > ' + hmm_output_fn, shell = True)
+        hmm_proc_out = subprocess.check_call('hmmsearch ' + data_dir + '/' + gene + '.hmm ' + aa_base_name + '.aa > ' + hmm_output_fn, shell = True)
     
     # parse HMM
     hmm_output = list(SearchIO.parse(hmm_output_fn, 'hmmer3-text'))
-    hmm_best_hsp = hmm_output[0][0][0]
+    hmm_best_hsp_index = None
+    hmm_best_hsp_bitscore = 0
+    for i,query_result in enumerate(hmm_output):
+        print('bitscore is ' + str(query_result[0].bitscore) + '\n')
+        if query_result[0].bitscore > hmm_best_hsp_bitscore:
+            hmm_best_hsp_bitscore = query_result[0].bitscore
+            hmm_best_hsp_index = i
+    
+    hmm_best_hsp = hmm_output[hmm_best_hsp_index][0][0]
     hmm_aln = hmm_best_hsp.aln
     subprocess.call('rm ' + hmm_output_fn, shell = True)
 
@@ -162,7 +170,7 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
         aln_start = get_aln_pos_from_ref(hmm_aln,98)
         hmm_match = hmm_aln[1,aln_start:(aln_start+1)].seq
         query_match = hmm_aln[0,aln_start:(aln_start+1)].seq
-        gap_count = hmm_match.count('.') - query_match.count('.')
+        print('Aln is: ' + str(hmm_aln))
         
         if hmm_match == "L":
             print(gff_base + '\tTrimethoprim resistant')
@@ -171,9 +179,9 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
             print(gff_base + '\tTrimethoprim sensitive')
             status = "S"
         else:
-            print(gff_base + '\tTrimethoprim unknown')
+            print(gff_base + '\tTrimethoprim unknown: ' + str(hmm_match))
             status = "NA"
-
+    quit()
     print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
     print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
 
@@ -267,7 +275,8 @@ if __name__ == '__main__':
 
     if files_for_input.pbp not in ['pbp1a','pbp2b','pbp2x']:
         aa_dir_name = "./" + re.sub(".csv","",files_for_input.output) + "_aa_dir"
-        os.mkdir(aa_dir_name)
+        if not os.path.exists(aa_dir_name):
+            os.mkdir(aa_dir_name)
         all_gene_names = [files_for_input.pbp]
 
     ###############################################################################
