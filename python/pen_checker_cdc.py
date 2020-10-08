@@ -82,9 +82,10 @@ def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
 
     return correct_length,gene_rower
 
-def get_aln_pos_from_ref(hmm_aln,pos):
+def get_aln_pos_from_ref(hmm_aln,pos,offset):
     
-    ref_pos = pos
+    pos = pos - offset
+    ref_pos = pos + 1
     upstream_length = 0
     while upstream_length < pos:
         upstream_frag = hmm_aln[1,0:ref_pos].seq
@@ -135,26 +136,26 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     hmm_proc_out = 1
     while hmm_proc_out != 0:
         hmm_proc_out = subprocess.check_call('hmmsearch ' + data_dir + '/' + gene + '.hmm ' + aa_base_name + '.aa > ' + hmm_output_fn, shell = True)
-    
+
     # parse HMM
     hmm_output = list(SearchIO.parse(hmm_output_fn, 'hmmer3-text'))
     hmm_best_hsp_index = None
     hmm_best_hsp_bitscore = 0
-    for i,query_result in enumerate(hmm_output):
-        print('bitscore is ' + str(query_result[0].bitscore) + '\n')
-        if query_result[0].bitscore > hmm_best_hsp_bitscore:
-            hmm_best_hsp_bitscore = query_result[0].bitscore
+    for i,hsp in enumerate(hmm_output[0]):
+        if hsp.bitscore > hmm_best_hsp_bitscore:
+            hmm_best_hsp_bitscore = hsp.bitscore
             hmm_best_hsp_index = i
     
-    hmm_best_hsp = hmm_output[hmm_best_hsp_index][0][0]
+    hmm_best_hsp = hmm_output[0][hmm_best_hsp_index][0]
+    hmm_offset = hmm_best_hsp.query_start
     hmm_aln = hmm_best_hsp.aln
     subprocess.call('rm ' + hmm_output_fn, shell = True)
 
     toc_hmm_run = time.perf_counter()
 
     if gene == 'folP':
-        aln_start = get_aln_pos_from_ref(hmm_aln,57)
-        aln_end = get_aln_pos_from_ref(hmm_aln,67)
+        aln_start = get_aln_pos_from_ref(hmm_aln,57,hmm_offset)
+        aln_end = get_aln_pos_from_ref(hmm_aln,67,hmm_offset)
         hmm_match = hmm_aln[1,aln_start:aln_end].seq
         query_match = hmm_aln[0,aln_start:aln_end].seq
         gap_count = hmm_match.count('.') - query_match.count('.')
@@ -167,10 +168,9 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
             status = "S"
     
     elif gene == 'dhfR':
-        aln_start = get_aln_pos_from_ref(hmm_aln,98)
+        aln_start = get_aln_pos_from_ref(hmm_aln,98,hmm_offset)
         hmm_match = hmm_aln[1,aln_start:(aln_start+1)].seq
         query_match = hmm_aln[0,aln_start:(aln_start+1)].seq
-        print('Aln is: ' + str(hmm_aln))
         
         if hmm_match == "L":
             print(gff_base + '\tTrimethoprim resistant')
@@ -181,7 +181,7 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
         else:
             print(gff_base + '\tTrimethoprim unknown: ' + str(hmm_match))
             status = "NA"
-    quit()
+
     print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
     print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
 
