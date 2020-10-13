@@ -88,7 +88,7 @@ def get_aln_pos_from_ref(hmm_aln,pos,offset):
     ref_pos = pos + 1
     upstream_length = 0
     while upstream_length < pos:
-        upstream_frag = hmm_aln[1,0:ref_pos].seq
+        upstream_frag = hmm_aln[0,0:ref_pos].seq
         upstream_length = len(upstream_frag) - upstream_frag.count('.')
         ref_pos = ref_pos + 1
     return(ref_pos - 1)
@@ -156,11 +156,11 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     if gene == 'folP':
         aln_start = get_aln_pos_from_ref(hmm_aln,57,hmm_offset)
         aln_end = get_aln_pos_from_ref(hmm_aln,67,hmm_offset)
-        hmm_match = hmm_aln[1,aln_start:aln_end].seq
-        query_match = hmm_aln[0,aln_start:aln_end].seq
+        hmm_match = hmm_aln[0,aln_start:aln_end].seq
+        query_match = hmm_aln[1,aln_start:aln_end].seq
         gap_count = hmm_match.count('.') - query_match.count('.')
         
-        if gap_count > -2:
+        if gap_count > 0:
             print(gff_base + '\tSulphamethoxazole resistant')
             status = "R"
         else:
@@ -169,17 +169,17 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     
     elif gene == 'dhfR':
         aln_start = get_aln_pos_from_ref(hmm_aln,98,hmm_offset)
-        hmm_match = hmm_aln[1,aln_start:(aln_start+1)].seq
-        query_match = hmm_aln[0,aln_start:(aln_start+1)].seq
+        hmm_match = hmm_aln[0,aln_start:(aln_start+1)].seq
+        query_match = hmm_aln[1,aln_start:(aln_start+1)].seq
         
-        if hmm_match == "L":
-            print(gff_base + '\tTrimethoprim resistant')
+        if query_match.upper() == "L":
+            print(gff_base + '\tTrimethoprim resistant (' + query_match.upper() + ')')
             status = "R"
-        elif hmm_match == "I":
-            print(gff_base + '\tTrimethoprim sensitive')
+        elif query_match.upper() == "I":
+            print(gff_base + '\tTrimethoprim sensitive (' + query_match.upper() + ')')
             status = "S"
         else:
-            print(gff_base + '\tTrimethoprim unknown: ' + str(hmm_match))
+            print(gff_base + '\tTrimethoprim unknown: ' + str(query_match).upper())
             status = "NA"
 
     print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
