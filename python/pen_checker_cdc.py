@@ -440,7 +440,7 @@ if __name__ == '__main__':
     # os.system(rm_command)
     
     if len(missing_isolates) > 0:
-        with open(("./missing_PBP_ids.txt"), mode='wt', encoding='utf-8') as myfile:
+        with open(("./missing_" + files_for_input.pbp + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
             myfile.write('\n'.join(missing_isolates) + '\n')
     out_df.to_csv(files_for_input.output,
                   index=False)
