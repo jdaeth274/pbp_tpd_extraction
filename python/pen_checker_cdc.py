@@ -212,11 +212,9 @@ def process_pbp(isolate,protein_fasta,tpd_start,tpd_end,tpd_lab,results_csv,k):
     prot = protein_rec[0].seq
 
     tpd_string = str(prot[tpd_start: tpd_end])
-<<<<<<< HEAD
+
     tpd_string = Seq(tpd_string)#, generic_protein)
-=======
-    tpd_string = Seq(tpd_string)
->>>>>>> c460e720e81072c68ab99670b39f25149a2a0cdc
+
     prot_tpd_id = isolate + "_" + tpd_lab + "_TPD"
     tpd_protein_string = SeqIO.SeqRecord(tpd_string, id=prot_tpd_id)
 
@@ -349,21 +347,16 @@ if __name__ == '__main__':
             # identify gene sequence within contig
             gene_string = str(correct_contig[(gene_start - 1):gene_end])
             if strand == "-":
-<<<<<<< HEAD
+
                 reverso = Seq(gene_string)#, generic_dna)
-=======
-                reverso = Seq(gene_string)
->>>>>>> c460e720e81072c68ab99670b39f25149a2a0cdc
+
                 gene_string = str(reverso.reverse_complement())
 
             isolate = re.split("\.", bassio_nameo)[0]
 
             # translate gene to protein
-<<<<<<< HEAD
+
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
-=======
-            protein_string = Seq(gene_string).translate()
->>>>>>> c460e720e81072c68ab99670b39f25149a2a0cdc
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
 
             # write protein sequence out for BLAST
