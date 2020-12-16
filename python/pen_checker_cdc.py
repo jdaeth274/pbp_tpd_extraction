@@ -1,6 +1,4 @@
 from Bio import SeqIO
-from Bio.Alphabet import generic_dna
-from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 from Bio import SearchIO
 import pandas
@@ -206,7 +204,7 @@ def process_pbp(isolate,protein_fasta,tpd_start,tpd_end,tpd_lab,results_csv,k):
     prot = protein_rec[0].seq
 
     tpd_string = str(prot[tpd_start: tpd_end])
-    tpd_string = Seq(tpd_string, generic_protein)
+    tpd_string = Seq(tpd_string)
     prot_tpd_id = isolate + "_" + tpd_lab + "_TPD"
     tpd_protein_string = SeqIO.SeqRecord(tpd_string, id=prot_tpd_id)
 
@@ -338,13 +336,13 @@ if __name__ == '__main__':
             # identify gene sequence within contig
             gene_string = str(correct_contig[(gene_start - 1):gene_end])
             if strand == "-":
-                reverso = Seq(gene_string, generic_dna)
+                reverso = Seq(gene_string)
                 gene_string = str(reverso.reverse_complement())
 
             isolate = re.split("\.", bassio_nameo)[0]
 
             # translate gene to protein
-            protein_string = Seq(gene_string, generic_dna).translate()
+            protein_string = Seq(gene_string).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
 
             # write protein sequence out for BLAST
