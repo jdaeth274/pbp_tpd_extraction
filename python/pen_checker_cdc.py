@@ -295,8 +295,6 @@ if __name__ == '__main__':
     isolate_name = []
     gene_id = []
     skip = False
-
-
     for k,(gff_file,fasta_file) in enumerate(zip(gff_lines,fasta_lines)):
 
         bassio_nameo = os.path.basename(gff_file)
