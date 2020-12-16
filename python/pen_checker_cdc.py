@@ -292,6 +292,7 @@ if __name__ == '__main__':
 
     isolate_name = []
     gene_id = []
+    missing_isolates = []
     skip = False
     for k,(gff_file,fasta_file) in enumerate(zip(gff_lines,fasta_lines)):
 
@@ -330,6 +331,7 @@ if __name__ == '__main__':
         if gene_rower.empty:
             
             print("No gene hit in this file:", bassio_nameo)
+            missing_isolates.append(bassio_nameo)
             
         else:
 
@@ -436,8 +438,10 @@ if __name__ == '__main__':
 
     # rm_command = "rm " + protein_fasta + " " + protein_csv
     # os.system(rm_command)
-
-
+    
+    if len(missing_isolates) > 0:
+        with open(("./missing_PBP_ids.txt"), mode='wt', encoding='utf-8') as myfile:
+            myfile.write('\n'.join(missing_isolates) + '\n')
     out_df.to_csv(files_for_input.output,
                   index=False)
 
