@@ -2,7 +2,6 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio import SearchIO
 import pandas
-import numpy
 import re
 import os
 import sys
@@ -64,6 +63,8 @@ def get_options():
 def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
 
     if not correct_length:
+        print(ref_in.head())
+        print(name)
         gene_row = ref_in['attributes'].str.contains(name)
         gene_row_indy = gene_row.where(gene_row == True)
         gene_row_indy = gene_row_indy.index[gene_row_indy == True].tolist()
@@ -120,8 +121,8 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
                 if len(peptide) > 30:
                     results.append(peptide)
 
-        #Use PotentialORFs.txt as output, can be changed
         #Write length and translation to file
+        #Use PotentialORFs.txt as output, can be changed
         with open(aa_base_name + '.aa', 'w') as output:
             for n,peptide in enumerate(results):
                 output.write(">{}\n{}\n".format('peptide_' + str(n), peptide))
@@ -323,7 +324,7 @@ if __name__ == '__main__':
                     skip = True
                     continue
                 if correct_length:
-                    sys.stderr.write('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
+                    print('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
 
         if skip:
             continue
