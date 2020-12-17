@@ -303,7 +303,12 @@ if __name__ == '__main__':
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
                                              'attributes'],
                                       header=None)
-
+        
+        if ref_gff_tsv['attributes'].isnull().all():
+            missing_isolates.append(bassio_nameo)
+            print(("This isn't a recognised GFF: " + bassio_nameo))
+            continue
+        
         gene_rower = None
         correct_length = False
         for gene in all_gene_names:
