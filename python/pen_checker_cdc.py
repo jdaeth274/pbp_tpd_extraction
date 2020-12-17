@@ -349,6 +349,7 @@ if __name__ == '__main__':
             for record in SeqIO.parse(fasta_file, "fasta"):
                 if record.id == contig_id:
                     correct_contig = record.seq
+
             
             # identify gene sequence within contig
             gene_string = str(correct_contig[(gene_start - 1):gene_end])
@@ -368,6 +369,7 @@ if __name__ == '__main__':
                 print(gene_end)
                 print(strand)
                 print(contig_id)
+                print(correct_contig.head())
                 sys.exit()
             
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
