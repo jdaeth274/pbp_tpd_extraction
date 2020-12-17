@@ -369,7 +369,7 @@ if __name__ == '__main__':
                 print(gene_end)
                 print(strand)
                 print(contig_id)
-                print(correct_contig.head())
+                print(correct_contig)
                 sys.exit()
             
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
