@@ -370,7 +370,7 @@ if __name__ == '__main__':
                 print(strand)
                 print(contig_id)
                 print("~~~~~~~~~~~~~~~~~~~~~~~~~~~ start of contig ~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                print(current_contig[0:200])
+                print(correct_contig[0:200])
                 sys.exit(__status=1)
             
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
