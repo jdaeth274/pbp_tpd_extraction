@@ -369,8 +369,9 @@ if __name__ == '__main__':
                 print(gene_end)
                 print(strand)
                 print(contig_id)
-                print(correct_contig)
-                sys.exit()
+                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~ start of contig ~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print(current_contig[0:200])
+                sys.exit(__status=1)
             
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
