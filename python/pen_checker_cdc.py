@@ -405,6 +405,7 @@ if __name__ == '__main__':
                     results_csv.to_csv("14673_2#1.contigs_velvet.fa.gff.csv",
                                        index=False)
                 print("No Blast results for this isolate:" , bassio_nameo)
+                missing_isolates.append(bassio_nameo)
             else:
                 top_res = results_csv.iloc[0]
                 sstart = top_res.iloc[6] - 1
