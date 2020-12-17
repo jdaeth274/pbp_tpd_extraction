@@ -1,0 +1,43 @@
+#PBS -l select=1:ncpus=1:mem=2gb
+#PBS -l walltime=02:00:00
+#PBS -J 1-621
+
+set -e
+
+module load anaconda3/personal
+
+source activate
+
+conda activate gps_pbp
+
+cd /rds/general/project/bacterial_evo_genomics/live/gps_annotations_4_2_2020/gps_pbp_runs
+
+current_dir=$(head -n $PBS_ARRAY_INDEX absolute_dir_paths | tail -n 1)
+
+cd $current_dir
+
+out_prefix=$(echo $current_dir | grep -o -a cluster_[0-9]*_)
+
+out_file="${out_prefix}_pbp_predictions.csv"
+
+ls -d $PWD/*.gff > cluster_gff_file.txt
+
+ls -d $PWD/*.velvet.fasta > cluster_fasta_list.txt
+
+bash ../gps_pbp_runs/pbp_tpd_extraction/bash/pbp_gene_extraction.sh cluster_gff_file.txt \
+cluster_fasta_list.txt $out_file
+
+cp $out_file ../gps_pbp_runs
+
+
+if [ -f missing_pbp1a_ids.txt ] || [ -f missing_pbp2b_ids.txt ] || [ -f missing_pbp2x_ids.txt ]
+then
+cat missing_pbp* > "${out_prefix}_missing_isolates.txt"
+cp "${out_prefix}_missing_isolates.txt" ../gps_pbp_runs
+fi
+
+cd ../gps_pbp_runs
+
+echo $out_prefix >> gps_pbp_finished.txt
+
+
