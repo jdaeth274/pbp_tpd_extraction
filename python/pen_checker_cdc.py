@@ -361,7 +361,15 @@ if __name__ == '__main__':
             isolate = re.split("\.", bassio_nameo)[0]
 
             # translate gene to protein
-
+            
+            if "12162_1#92" in bassio_nameo:
+                print(gene_string)
+                print(gene_start)
+                print(gene_end)
+                print(strand)
+                print(contig_id)
+                sys.exit()
+            
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
             
