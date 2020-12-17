@@ -364,9 +364,11 @@ if __name__ == '__main__':
 
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
-
+            
+            
+            print(bassio_nameo + ".fasta")
             # write protein sequence out for BLAST
-            with open((bassio_nameo + ".fasta"), "w+") as output_handle:
+            with open((bassio_nameo + files_for_input.pbp + ".fasta"), "w+") as output_handle:
                 SeqIO.write(protein_string, output_handle, "fasta")
 
             #######################################################################
@@ -374,8 +376,8 @@ if __name__ == '__main__':
             ## closest hit in the cdc alignment file ##############################
             #######################################################################
 
-            protein_fasta = bassio_nameo + ".fasta"
-            protein_csv = bassio_nameo + ".csv"
+            protein_fasta = bassio_nameo + files_for_input.pbp + ".fasta"
+            protein_csv = bassio_nameo + files_for_input.pbp  + ".csv"
 
             align_path = files_for_input.aln
             basename_aligno = os.path.basename(files_for_input.aln)
