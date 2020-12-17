@@ -63,8 +63,6 @@ def get_options():
 def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
 
     if not correct_length:
-        print(ref_in.head())
-        print(name)
         gene_row = ref_in['attributes'].str.contains(name)
         gene_row_indy = gene_row.where(gene_row == True)
         gene_row_indy = gene_row_indy.index[gene_row_indy == True].tolist()
