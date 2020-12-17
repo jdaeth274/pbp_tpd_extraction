@@ -348,8 +348,7 @@ if __name__ == '__main__':
             # identify contigs within assembly
             for record in SeqIO.parse(fasta_file, "fasta"):
                 if record.id == contig_id:
-                    if "12162_1#92" in bassio_nameo:
-                        print(record.id)
+
                     correct_contig = record.seq
 
             
@@ -365,17 +364,7 @@ if __name__ == '__main__':
 
             # translate gene to protein
             
-            if "12162_1#92" in bassio_nameo:
-                print(gene_string)
-                print(gene_start)
-                print(gene_end)
-                print(strand)
-                print(contig_id)
-                print(fasta_file)
-                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~ start of contig ~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                print(correct_contig[0:200])
-                sys.exit(__status=1)
-            
+                       
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
             
