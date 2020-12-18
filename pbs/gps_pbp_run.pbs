@@ -30,7 +30,7 @@ cluster_fasta_list.txt $out_file
 cp $out_file ../gps_pbp_runs
 
 
-if [ -f missing_pbp1a_ids.txt ] || [ -f missing_pbp2b_ids.txt ] || [ -f missing_pbp2x_ids.txt ]
+if [ -f missing_pbp1a_ids.txt ] || [ -f missing_pbp2b_ids.txt ] || [ -f missing_pbp2x_ids.txt ] || [ -f missing_pbps_aa_df_isolates.txt ]
 then
 cat missing_pbp* > "${out_prefix}_missing_isolates.txt"
 cp "${out_prefix}_missing_isolates.txt" ../gps_pbp_runs

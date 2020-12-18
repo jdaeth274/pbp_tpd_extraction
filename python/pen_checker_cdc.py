@@ -364,7 +364,7 @@ if __name__ == '__main__':
 
             # translate gene to protein
             
-                       
+
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
             
