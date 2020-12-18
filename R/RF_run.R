@@ -89,16 +89,17 @@ blossy_changer <- function(validation, training_purp, blossy){
   # 
   
   changed_row <- NULL
-    
+  aa_cols <- grep("__", colnames(validation))
   
-  for (k in 1:(ncol(validation) - 1)){
-
+  for (k in aa_cols){
+    
+    
     num_changed <- 0
     validation[,k] <- droplevels(validation[,k])
     current_col <- training_purp[,k]
     train_vals <- plyr::count(current_col)
     valid_vals <- plyr::count(validation[,k])
-    
+      
     for(l in 1:nrow(valid_vals)){
       current_aa <- as.character(valid_vals[l,1])
       if(!(current_aa %in% train_vals[,1])){
@@ -174,9 +175,9 @@ blossy_changer_old <- function(validation, training_purp, blossy){
   # 
   
   changed_row <- NULL
+  aa_cols <- grep("__", validation)
   
-  
-  for (k in 1:(ncol(validation) - 1)){
+  for (k in aa_cols){
     num_changed <- 0
     current_col <- training_purp[,k]
     train_vals <- plyr::count(current_col)
@@ -375,7 +376,7 @@ rf_model_fitter <- function(input_data, test_data = NULL, test_known = FALSE, in
                             categories = 3){
   
   start_time <- Sys.time()
-  
+
   if(categories == 3){
     cat_func <- catergory_assessment 
   }else if(categories == 5){
@@ -607,6 +608,7 @@ results_testing_plotter <- function(results_df, column_to_use,y_lab, pdf_out_fil
 ## Right, now we'll run on the pmen known data to test fitting to the data ####
 ###############################################################################
 
+#input_args <- c("~/Documents/phd_downloads/aa_df.csv","~/Dropbox/phd/PMEN3/test_pen/pbp_tpd_extraction/data/cdc_seqs_df.csv", 3, "../testout_csv")
 input_args <- commandArgs(trailingOnly = TRUE)
 test_set <- input_args[1]
 training_set <- input_args[2]
