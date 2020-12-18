@@ -104,6 +104,18 @@ amino_acid_db <- aa_adder(amino_acid_db, pbp1a_files, "1a")
 amino_acid_db <- aa_adder(amino_acid_db, pbp2b_files, "2b")
 amino_acid_db <- aa_adder(amino_acid_db, pbp2x_files, "2x")
 
+###############################################################################
+## Remove any NA values from the df and add these to the missing isolates list 
+###############################################################################
+
+missing_rows <- amino_acid_db[rowSums(is.na(amino_acid_db)) > 0,]
+amino_acid_db <- amino_acid_db[complete.cases(amino_acid_db),]
+
+if(nrow(missing_rows) > 0){
+  writeLines(missing_rows$id, con = "missing_aa_isolates.txt")  
+}
+
+
 
 write.csv(amino_acid_db, file = out_csv_name)
 
