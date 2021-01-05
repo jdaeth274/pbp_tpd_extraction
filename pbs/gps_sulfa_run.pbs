@@ -25,9 +25,9 @@ ls -d $PWD/*.gff > cluster_gff_file.txt
 ls -d $PWD/*.velvet.fasta > cluster_fasta_list.txt
 
 python ../gps_pbp_runs/pbp_tpd_extraction/python/pen_checker_cdc.py --gff cluster_gff_file.txt \
--pbp folP --aln ../gps_pbp_runs/pbp_tpd_extraction/data/pbp1a.faa --tlength 2159 \
+--pbp folP --aln ../gps_pbp_runs/pbp_tpd_extraction/data/pbp1a.faa --tlength 2159 \
 --output $out_file --tolerance 100 --gene folP \
---data_dir ../gps_pbp_runs/pbp_tpd_extraction/data/
+--data_dir ../gps_pbp_runs/pbp_tpd_extraction/data
 
 cp $out_file ../gps_pbp_runs
 
