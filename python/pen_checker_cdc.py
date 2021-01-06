@@ -142,7 +142,11 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
         if hsp.bitscore > hmm_best_hsp_bitscore:
             hmm_best_hsp_bitscore = hsp.bitscore
             hmm_best_hsp_index = i
-    
+
+    if hmm_best_hsp_index is None:
+        return "Missing_HMM", gff_base
+
+
     hmm_best_hsp = hmm_output[0][hmm_best_hsp_index][0]
     hmm_offset = hmm_best_hsp.query_start
     hmm_aln = hmm_best_hsp.aln
