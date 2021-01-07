@@ -3,6 +3,14 @@
 
 require(dplyr)
 
+## load up input ##
+
+input_args <- commandArgs(trailingOnly = TRUE)
+
+hits_prefix <- input_args[1]
+out_prefix <- input_args[2]
+
+
 missing_files <- list.files("./", "__missing_isolates.txt")
 
 missing_iso <- NULL
@@ -23,14 +31,14 @@ for(k in missing_files){
 }
 
 
-hit_files <- list.files("./", "__pbp_predictions.csv")
+hit_files <- list.files("./", hits_prefix)
 
 gps_hits <- NULL
 
 for(k in hit_files){
-  current_hits <- read.csv(k, stringsAsFactors = FALSE) %>% select(c(id, penicillin_cat))
+  current_hits <- read.csv(k, stringsAsFactors = FALSE) #%>% select(c(id, penicillin_cat))
   
-  current_cluster <- sub("__pbp_predictions.csv","",sub("cluster_","gpsc.",k))
+  current_cluster <- sub(hits_prefix,"",sub("cluster_","gpsc.",k))
   
   current_hits$cluster_name <- current_cluster
   
@@ -38,10 +46,12 @@ for(k in hit_files){
   
 }
 
+out_name <- paste(out_prefix, "_profiles.csv", sep="")
+out_missing <- paste(out_prefix, "_missing_isolates.csv", sep = "")
 
-write.csv(missing_iso, file = "./gps_missing_pbp_isolates.csv", row.names = FALSE)
+write.csv(missing_iso, file = out_missing, row.names = FALSE)
 
-write.csv(gps_hits, "./gps_pbp_profiles.csv", row.names = FALSE)
+write.csv(gps_hits, out_name, row.names = FALSE)
 
 
 
