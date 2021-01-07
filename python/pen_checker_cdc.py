@@ -246,7 +246,8 @@ def process_pbp(isolate,protein_fasta,tpd_start,tpd_end,tpd_lab,results_csv,k):
 #########
 
 if __name__ == '__main__':
-
+    tic_setup = time.perf_counter()
+    print("Beginning setup")
     pandas.set_option('display.max_columns', 500)
 
     # parse command line
@@ -297,8 +298,12 @@ if __name__ == '__main__':
     gene_id = []
     missing_isolates = []
     skip = False
+    toc_setup = time.perf_counter()
+    print("Took this long for initial set up: %s" % (toc_setup - tic_setup))
+    print("Beginning iso run")
     for k,(gff_file,fasta_file) in enumerate(zip(gff_lines,fasta_lines)):
-
+        print("On isolate %s of %s" % (k, len(gff_lines)))
+        tic_iso_run = time.perf_counter()
         bassio_nameo = os.path.basename(gff_file)
         
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
@@ -329,6 +334,8 @@ if __name__ == '__main__':
                     gene_id.append(current_res)
                     isolate_name.append(current_isolate)
                     skip = True
+                    toc_iso_run = time.perf_counter()
+                    print("Took this long for isolate %s, overall: %s" %(current_isolate, (toc_iso_run - tic_iso_run)))
                     continue
                 if correct_length:
                     print('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
