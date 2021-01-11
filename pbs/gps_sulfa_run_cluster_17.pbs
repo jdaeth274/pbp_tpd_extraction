@@ -1,6 +1,5 @@
 #PBS -l select=1:ncpus=1:mem=2gb
 #PBS -l walltime=24:00:00
-#PBS -J 1-621
 
 set -e
 
@@ -12,13 +11,10 @@ conda activate gps_pbp
 
 cd /rds/general/project/bacterial_evo_genomics/live/gps_annotations_4_2_2020/gps_pbp_runs
 
-current_dir=$(head -n $PBS_ARRAY_INDEX absolute_dir_paths | tail -n 1)
+cd ../cluster_17_list_gffs/
 
-cd $current_dir
-
-out_prefix=$(echo $current_dir | grep -o -a cluster_[0-9]*_)
-
-out_file="${out_prefix}_sulfa_predictions.csv"
+out_prefix="cluster_17_"
+out_file="cluster_17__sulfa_predictions.csv"
 
 ls -d $PWD/*.gff > cluster_gff_file.txt
 

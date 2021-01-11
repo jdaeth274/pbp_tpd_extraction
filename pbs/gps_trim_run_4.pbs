@@ -1,6 +1,6 @@
 #PBS -l select=1:ncpus=1:mem=2gb
 #PBS -l walltime=24:00:00
-#PBS -J 1-621
+#PBS -J 1-4
 
 set -e
 
@@ -12,27 +12,27 @@ conda activate gps_pbp
 
 cd /rds/general/project/bacterial_evo_genomics/live/gps_annotations_4_2_2020/gps_pbp_runs
 
-current_dir=$(head -n $PBS_ARRAY_INDEX absolute_dir_paths | tail -n 1)
+current_dir=$(head -n $PBS_ARRAY_INDEX re_run_trims.txt | tail -n 1)
 
 cd $current_dir
 
 out_prefix=$(echo $current_dir | grep -o -a cluster_[0-9]*_)
 
-out_file="${out_prefix}_sulfa_predictions.csv"
+out_file="${out_prefix}_trim_predictions.csv"
 
 ls -d $PWD/*.gff > cluster_gff_file.txt
 
 ls -d $PWD/*.velvet.fasta > cluster_fasta_list.txt
 
 python ../gps_pbp_runs/pbp_tpd_extraction/python/pen_checker_cdc.py --gff cluster_gff_file.txt \
---pbp folP --aln ../gps_pbp_runs/pbp_tpd_extraction/data/pbp1a.faa --tlength 2159 \
---output $out_file --tolerance 100 --gene folP \
+--pbp dhfR --aln ../gps_pbp_runs/pbp_tpd_extraction/data/pbp1a.faa --tlength 2159 \
+--output $out_file --tolerance 100 --gene dhfR \
 --data_dir ../gps_pbp_runs/pbp_tpd_extraction/data
 
 cp $out_file ../gps_pbp_runs
 
 cd ../gps_pbp_runs
 
-echo $out_prefix >> gps_sulfa_finished.txt
+echo $out_prefix >> gps_trim_finished.txt
 
 
