@@ -1,3 +1,6 @@
+print("Importing packages")
+import time
+tic_importing = time.perf_counter()
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio import SearchIO
@@ -7,7 +10,9 @@ import os
 import sys
 import argparse
 import subprocess
-import time
+toc_importing = time.perf_counter()
+
+print("Importing packages took %s" % (toc_importing - tic_importing))
 #############
 # FUNCTIONS #
 #############
@@ -84,10 +89,19 @@ def get_aln_pos_from_ref(hmm_aln,pos,offset):
     pos = pos - offset
     ref_pos = pos + 1
     upstream_length = 0
+    while_counter = 0
     while upstream_length < pos:
+        old_upstream = upstream_length
         upstream_frag = hmm_aln[0,0:ref_pos].seq
+
         upstream_length = len(upstream_frag) - upstream_frag.count('.')
         ref_pos = ref_pos + 1
+        while_counter += 1
+        if while_counter > 10:
+            if (upstream_length - old_upstream) == 0:
+                return False
+
+
     return(ref_pos - 1)
 
 def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
@@ -99,7 +113,7 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     # load sequence
 
     tic_aa_creator = time.perf_counter()
-
+    print("Creating aa")
     for record in SeqIO.parse(fasta, "fasta"):
 
 
@@ -126,7 +140,7 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
                 output.write(">{}\n{}\n".format('peptide_' + str(n), peptide))
 
     toc_aa_creator = time.perf_counter()
-
+    print("Running HMM on aa")
     tic_hmm_run = time.perf_counter()
     # run HMM
     hmm_output_fn = aa_base_name + '.' + gene + '.hsp.out'
@@ -135,6 +149,7 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
         hmm_proc_out = subprocess.check_call('hmmsearch ' + data_dir + '/' + gene + '.hmm ' + aa_base_name + '.aa > ' + hmm_output_fn, shell = True)
 
     # parse HMM
+    print("Parsing HMM")
     hmm_output = list(SearchIO.parse(hmm_output_fn, 'hmmer3-text'))
     hmm_best_hsp_index = None
     hmm_best_hsp_bitscore = 0
@@ -153,10 +168,16 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
     subprocess.call('rm ' + hmm_output_fn, shell = True)
 
     toc_hmm_run = time.perf_counter()
-
+    print("Printing out the resistance")
     if gene == 'folP':
         aln_start = get_aln_pos_from_ref(hmm_aln,57,hmm_offset)
         aln_end = get_aln_pos_from_ref(hmm_aln,67,hmm_offset)
+        if isinstance(aln_start, bool) or isinstance(aln_end, bool):
+            print(gff_base + '\tMatch not large enough to folP')
+            print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
+            print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
+            status = "NA"
+            return  status, gff_base
         hmm_match = hmm_aln[0,aln_start:aln_end].seq
         query_match = hmm_aln[1,aln_start:aln_end].seq
         gap_count = hmm_match.count('.') - query_match.count('.')
@@ -169,10 +190,17 @@ def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
             status = "S"
     
     elif gene == 'dhfR':
+        print("Getting aln pos")
         aln_start = get_aln_pos_from_ref(hmm_aln,98,hmm_offset)
+        if isinstance(aln_start, bool):
+            print(gff_base + '\tMatch not large enough to dhfR')
+            print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
+            print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
+            status = "NA"
+            return  status, gff_base
         hmm_match = hmm_aln[0,aln_start:(aln_start+1)].seq
         query_match = hmm_aln[1,aln_start:(aln_start+1)].seq
-        
+        print("Printing out results")
         if query_match.upper() == "L":
             print(gff_base + '\tTrimethoprim resistant (' + query_match.upper() + ')')
             status = "R"
