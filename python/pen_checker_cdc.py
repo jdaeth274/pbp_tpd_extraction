@@ -102,6 +102,7 @@ def get_aln_pos_from_ref(hmm_aln,pos,offset):
                 return False
 
 
+
     return(ref_pos - 1)
 
 def hmm_search_for_gene(fasta,gene, aa_dir_name, data_dir):
