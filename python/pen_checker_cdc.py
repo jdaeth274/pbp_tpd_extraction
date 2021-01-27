@@ -381,17 +381,21 @@ if __name__ == '__main__':
 
             # extract hit information
             contig_id = gene_rower.iloc[0,0]
+            print(contig_id)
             gene_start = int(gene_rower.iloc[0,3])
             gene_end = int(gene_rower.iloc[0,4])
             strand = str(gene_rower.iloc[0, 6])
-
+            correct_contig =False
             # identify contigs within assembly
             for record in SeqIO.parse(fasta_file, "fasta"):
+                print(record.id)
                 if record.id == contig_id:
 
                     correct_contig = record.seq
 
-            
+            if isinstance(correct_contig, bool):
+                print("No contig name match in gff")
+                sys.exit()
             # identify gene sequence within contig
             gene_string = str(correct_contig[(gene_start - 1):gene_end])
             if strand == "-":
@@ -458,15 +462,15 @@ if __name__ == '__main__':
 
                 if files_for_input.pbp == "pbp1a":
                     tpd_start = sstart
-                    tpd_end = sstart + 252
+                    tpd_end = send#sstart + 252
                     tpd_lab = "pbp1a"
                 elif files_for_input.pbp == "pbp2b":
                     tpd_start = sstart
-                    tpd_end = sstart + 277
+                    tpd_end = send#sstart + 277
                     tpd_lab = "pbp2b"
                 elif files_for_input.pbp == "pbp2x":
-                    tpd_start = sstart + 60
-                    tpd_end = tpd_start + 299
+                    tpd_start = sstart#sstart + 60
+                    tpd_end = send#tpd_start + 299
                     tpd_lab = "pbp2x"
                     if isolate == "11511_7#11":
                         print(sstart, tpd_start,"Now for the ends \n", send, tpd_end)
