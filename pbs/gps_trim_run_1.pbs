@@ -10,7 +10,7 @@ conda activate gps_pbp
 
 cd /rds/general/project/bacterial_evo_genomics/live/gps_annotations_4_2_2020/gps_pbp_runs
 
-current_dir=$(head -n 4 re_run_trims.txt | tail -n 1)
+current_dir=$(head -n 1 re_run_trims.txt | tail -n 1)
 echo "In this directory now ${current_dir}"
 cd $current_dir
 

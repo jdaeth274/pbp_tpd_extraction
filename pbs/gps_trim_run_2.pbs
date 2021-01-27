@@ -10,7 +10,7 @@ conda activate gps_pbp
 
 cd /rds/general/project/bacterial_evo_genomics/live/gps_annotations_4_2_2020/gps_pbp_runs
 
-current_dir=$(head -n 4 re_run_trims.txt | tail -n 1)
+current_dir=$(head -n 2 re_run_trims.txt | tail -n 1)
 echo "In this directory now ${current_dir}"
 cd $current_dir
 
@@ -29,8 +29,8 @@ echo "Now running the python script"
 python ../gps_pbp_runs/pbp_tpd_extraction/python/pen_checker_cdc.py --gff cluster_gff_file.txt \
 --pbp dhfR --aln ../gps_pbp_runs/pbp_tpd_extraction/data/pbp1a.faa --tlength 2159 \
 --output $out_file --tolerance 100 --gene dhfR \
---data_dir ../gps_pbp_runs/pbp_tpd_extraction/data
-
+--data_dir ../gps_pbp_runs/pbp_tpd_extraction/data \
+--fasta cluster_fasta_list.txt
 
 cp $out_file ../gps_pbp_runs
 
