@@ -1,9 +1,10 @@
-## Extraction the pbp TPD domains from Strep pneumo gffs ##
+# Extraction the pbp TPD domains from Strep pneumo gffs #
 
-# Installation #
+## Installation ##
 
 This requires conda, please install conda first [here](docs.conda.io/projects/conda/en/latest/user-guide/install)
-Once installed clone the repo
+Once installed clone the repo:
+
 `git clone https://github.com/jdaeth274/pbp_tpd_extraction`
 
 Then use the environment.yml file to install the dependencies with conda
@@ -14,7 +15,7 @@ Activate this environment using
 
 `conda activate pbp_tpd_env`
 
-# Usage # 
+## Usage ##
 
 For pbp extraction, once in the pbp_tpd_env created from above use the following script command
 to run and extract a csv of the isolate name and the pbp resistance category. 
