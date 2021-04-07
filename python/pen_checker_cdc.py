@@ -303,8 +303,7 @@ if __name__ == '__main__':
     
     fasta_lines = []
     if files_for_input.fasta is None:
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print("I'm in the fasta from gff")
+
         for gff in gff_lines:
             fasta_lines.append(extract_fasta_from_gff(gff))
     else:
@@ -434,7 +433,7 @@ if __name__ == '__main__':
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
             
             
-            print(bassio_nameo + ".fasta")
+
             # write protein sequence out for BLAST
             with open((bassio_nameo + files_for_input.pbp + ".fasta"), "w+") as output_handle:
                 SeqIO.write(protein_string, output_handle, "fasta")

@@ -1,0 +1,23 @@
+name: pbp_tpd_env
+channels:
+- conda-forge
+- bioconda
+- defaults 
+- r
+dependencies:
+- biopython
+- pandas
+- argparse
+- r-randomForest
+- r-seqinr
+- r-protr
+- r-BiocManager
+- r-ape
+- r-dplyr
+- r-tibble
+- r-ggplot2
+- r-tidyr
+- r-tictoc
+- r-reshape2
+- r-ranger
+- r-ranger
