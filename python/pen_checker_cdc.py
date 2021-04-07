@@ -270,6 +270,16 @@ def process_pbp(isolate,protein_fasta,tpd_start,tpd_end,tpd_lab,results_csv,k):
 
     print("Generating CSV: %s%%" % round((k / len(gff_lines) * 100)))
 
+def contig_number_getter(contig_name):
+    if "|" in contig_name:
+        contig_num = contig_name[-3:]
+        contig_num = int(contig_num)
+    else:
+        contig_num = re.sub("^.*[0-9]\.","",contig_name)
+        contig_num =int(contig_num)
+
+    return contig_num
+
 #########
 # BEGIN #
 #########
@@ -293,6 +303,8 @@ if __name__ == '__main__':
     
     fasta_lines = []
     if files_for_input.fasta is None:
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print("I'm in the fasta from gff")
         for gff in gff_lines:
             fasta_lines.append(extract_fasta_from_gff(gff))
     else:
@@ -331,9 +343,11 @@ if __name__ == '__main__':
     print("Took this long for initial set up: %s" % (toc_setup - tic_setup))
     print("Beginning iso run")
     for k,(gff_file,fasta_file) in enumerate(zip(gff_lines,fasta_lines)):
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("On isolate %s of %s" % (k, len(gff_lines)))
         tic_iso_run = time.perf_counter()
         bassio_nameo = os.path.basename(gff_file)
+
         
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
@@ -351,12 +365,9 @@ if __name__ == '__main__':
             if not correct_length:
                 #print('Searching for name ' + gene)
                 if files_for_input.pbp in ['pbp1a','pbp2b','pbp2x']:
-                    correct_length,gene_rower = search_for_gene(ref_gff_tsv,
-                                                                gene,
-                                                                gene_length,
+                    correct_length,gene_rower = search_for_gene(ref_gff_tsv, gene, gene_length,
                                                                 files_for_input.tolerance,
-                                                                correct_length,
-                                                                gene_rower)
+                                                                correct_length, gene_rower)
                 else:
 
                     current_res, current_isolate = hmm_search_for_gene(fasta_file, files_for_input.pbp, aa_dir_name, files_for_input.data_dir)
@@ -381,23 +392,33 @@ if __name__ == '__main__':
 
             # extract hit information
             contig_id = gene_rower.iloc[0,0]
-            print(contig_id)
+            if "INV200" in bassio_nameo:
+                contig_num = contig_id
+            else:
+                contig_num = contig_number_getter(contig_id)
+
             gene_start = int(gene_rower.iloc[0,3])
             gene_end = int(gene_rower.iloc[0,4])
             strand = str(gene_rower.iloc[0, 6])
             correct_contig =False
             # identify contigs within assembly
             for record in SeqIO.parse(fasta_file, "fasta"):
-                print(record.id)
-                if record.id == contig_id:
+                if "INV200" in bassio_nameo:
+                    current_name = record.id
+                else:
+                    current_name = contig_number_getter(record.id)
+
+                if current_name == contig_num:
 
                     correct_contig = record.seq
+                    break
 
             if isinstance(correct_contig, bool):
                 print("No contig name match in gff")
                 sys.exit()
             # identify gene sequence within contig
             gene_string = str(correct_contig[(gene_start - 1):gene_end])
+
             if strand == "-":
 
                 reverso = Seq(gene_string)#, generic_dna)
@@ -450,10 +471,9 @@ if __name__ == '__main__':
 
             results_csv = results_csv.sort_values(['bitscore'], ascending = False)
             if results_csv.empty:
-                if bassio_nameo == "14673_2#1.contigs_velvet.fa.gff":
-                    results_csv.to_csv("14673_2#1.contigs_velvet.fa.gff.csv",
-                                       index=False)
+
                 print("No Blast results for this isolate:" , bassio_nameo)
+                sysysysysy.exit()
                 missing_isolates.append(bassio_nameo)
             else:
                 top_res = results_csv.iloc[0]

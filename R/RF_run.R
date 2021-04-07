@@ -612,13 +612,8 @@ results_testing_plotter <- function(results_df, column_to_use,y_lab, pdf_out_fil
 input_args <- commandArgs(trailingOnly = TRUE)
 test_set <- input_args[1]
 training_set <- input_args[2]
-number_of_categories <- input_args[3]
+number_of_categories <- as.integer(input_args[3])
 out_csv_name <- input_args[4]
-
-test_set <- "~/Dropbox/phd/elife_paper/data/rf_model_run_interpretation/cluster_1_aa_df.csv"
-training_set <- "~/Dropbox/phd/PMEN3/test_pen/pbp_tpd_extraction/data/cdc_seqs_df.csv"
-number_of_categories <- 3
-out_csv_name <- "~/Dropbox/phd/elife_paper/data/rf_model_run_interpretation/cluster_1_pbp_out.csv"
 ## load up the AA csv from the bash script here 
 whole_aa_data_sample <- read.csv(file = test_set,
                                stringsAsFactors = TRUE)

@@ -1,26 +1,27 @@
 ###############################################################################
 ## Rscript to create output csv of AAs for future RF and MN model fitting #####
 ###############################################################################
-require(seqinr)
-require(stringr)
+require(seqinr, quietly = TRUE)
+require(stringr, quietly = TRUE)
 
 aa_adder <- function(df, list_of_files, gene){
+  
   missing_mic_data <- NULL
   
   if(gene == "1a"){
     col_start = 2
-    col_end = 253
-    tpd_length = 252
-    col_vec = seq(2,253)
-  }else if(gene == "2b"){
-    col_start = 254
-    col_end = 530
+    col_end = 278
     tpd_length = 277
+    col_vec = seq(2,278)
+  }else if(gene == "2b"){
+    col_start = 279
+    col_end = 556
+    tpd_length = 278
     col_vec = seq(col_start, col_end)
   }else if (gene == "2x"){
-    col_start = 531
-    col_end = 829
-    tpd_length = 299
+    col_start = 557
+    col_end = 915
+    tpd_length = 359
     col_vec = seq(col_start, col_end)
   }
   
@@ -31,6 +32,7 @@ aa_adder <- function(df, list_of_files, gene){
     # if (k == 582){
     #    browser()
     # }
+    
     db_index <- which(df[,1] == isolate_name)
     
     if(length(db_index) == 1){
@@ -38,8 +40,8 @@ aa_adder <- function(df, list_of_files, gene){
       current_fasta <- read.fasta(file = current_file,
                                   seqtype = "AA")
       
-      if(length(current_fasta[[1]]) == tpd_length){
-        for(j in 1:length(current_fasta[[1]])){
+      if(length(current_fasta[[1]]) >= tpd_length){
+        for(j in 1:tpd_length){
           df[db_index,col_vec[j]] <- current_fasta[[1]][[j]] 
           
         }
@@ -87,11 +89,11 @@ tot_isolates <- union(tot_isolates, pbp2x_isolates)
 ## Set up df to collate AA tpds ###############################################
 ###############################################################################
 
-one_a <- paste("a1_", seq(1,252), sep = "_")
-two_b <- paste("b2_", seq(1, 277), sep = "_")
-two_x <- paste("x2_", seq(61,359), sep = "_")
+one_a <- paste("a1_", seq(1,277), sep = "_")
+two_b <- paste("b2_", seq(1, 278), sep = "_")
+two_x <- paste("x2_", seq(1,359), sep = "_")
 
-amino_acid_db <- data.frame(data = matrix(data = NA, ncol = 829, nrow = length(tot_isolates)))
+amino_acid_db <- data.frame(data = matrix(data = NA, ncol = 915, nrow = length(tot_isolates)))
 colnames(amino_acid_db) <- c("id",one_a, two_b, two_x)
 amino_acid_db$id <- tot_isolates
 
@@ -108,6 +110,8 @@ amino_acid_db <- aa_adder(amino_acid_db, pbp2x_files, "2x")
 ## Remove any NA values from the df and add these to the missing isolates list 
 ###############################################################################
 
+
+
 missing_rows <- amino_acid_db[rowSums(is.na(amino_acid_db)) > 0,]
 amino_acid_db <- amino_acid_db[complete.cases(amino_acid_db),]
 
@@ -117,5 +121,5 @@ if(nrow(missing_rows) > 0){
 
 
 
-write.csv(amino_acid_db, file = out_csv_name)
+write.csv(amino_acid_db, file = out_csv_name, row.names = FALSE)
 

@@ -55,15 +55,15 @@ else
   ## Lets run through the pbp gene getting pbp1a, 2b 2x
     echo "Extracting pbp1a/ponA now"
     python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp1a --gene ponA,pbp1A --aln "${datadir}pbp1a.faa" --tlength 2159 --output pbp1a_cdc_mic_type.csv --tolerance 100
+    --gff $1 --fasta $2 --pbp pbp1a --gene ponA,pbp1A --aln "${datadir}pbp1a.faa" --tlength 2159 --output pbp1a_cdc_mic_type.csv --tolerance 500
 
     echo "Extracting pbp2b/penA now"
     python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp2b --gene penA,pbp2B --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 100
+    --gff $1 --fasta $2 --pbp pbp2b --gene penA,pbp2B --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 650
 
     echo "Extracting pbp2x/pbpX now"
     python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp2x --gene pbpX,pbp2X --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 100
+    --gff $1 --fasta $2 --pbp pbp2x --gene pbpX,pbp2X --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 500
 
     ## Create the lists of prots for the Rscript to work on
 
