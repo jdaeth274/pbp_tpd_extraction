@@ -1,4 +1,4 @@
-# Extraction the pbp TPD domains from Strep pneumo gffs #
+# Extraction of the pbp TPD domains from Strep pneumo gffs #
 
 ## Installation ##
 
