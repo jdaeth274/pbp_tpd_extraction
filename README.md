@@ -2,7 +2,7 @@
 
 ## Installation ##
 
-This requires conda, please install conda first [here](docs.conda.io/projects/conda/en/latest/user-guide/install)
+This requires conda, please install conda first [here](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
 Once installed clone the repo:
 
 `git clone https://github.com/jdaeth274/pbp_tpd_extraction`
