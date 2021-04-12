@@ -8,6 +8,7 @@ dependencies:
 - biopython
 - pandas
 - argparse
+- blast
 - r-randomForest
 - r-seqinr
 - r-protr
