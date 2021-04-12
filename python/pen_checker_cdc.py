@@ -68,6 +68,7 @@ def get_options():
 def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
 
     if not correct_length:
+        correct_length = False
         gene_row = ref_in['attributes'].str.contains(name)
         gene_row_indy = gene_row.where(gene_row == True)
         gene_row_indy = gene_row_indy.index[gene_row_indy == True].tolist()
@@ -80,6 +81,7 @@ def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
             if overhang[0] <= gene_len[0] <= overhang[1]:
                 correct_length = True
             else:
+                correct_length = False
                 sys.stderr.write('Found gene' + name + ' but wrong length: ' + str(gene_len[0]) + ', expected: ' + str(gene_length) + '\n')
 
     return correct_length,gene_rower
@@ -347,6 +349,8 @@ if __name__ == '__main__':
         tic_iso_run = time.perf_counter()
         bassio_nameo = os.path.basename(gff_file)
 
+        # if "6187_6#14" not in bassio_nameo:
+        #     continue
         
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
@@ -367,6 +371,7 @@ if __name__ == '__main__':
                     correct_length,gene_rower = search_for_gene(ref_gff_tsv, gene, gene_length,
                                                                 files_for_input.tolerance,
                                                                 correct_length, gene_rower)
+                    
                 else:
 
                     current_res, current_isolate = hmm_search_for_gene(fasta_file, files_for_input.pbp, aa_dir_name, files_for_input.data_dir)
@@ -382,7 +387,7 @@ if __name__ == '__main__':
         if skip:
             continue
 
-        if gene_rower.empty:
+        if gene_rower.empty or not correct_length:
             
             print("No gene hit in this file:", bassio_nameo)
             missing_isolates.append(bassio_nameo)
@@ -399,6 +404,7 @@ if __name__ == '__main__':
             gene_start = int(gene_rower.iloc[0,3])
             gene_end = int(gene_rower.iloc[0,4])
             strand = str(gene_rower.iloc[0, 6])
+
             correct_contig =False
             # identify contigs within assembly
             for record in SeqIO.parse(fasta_file, "fasta"):
@@ -427,7 +433,6 @@ if __name__ == '__main__':
             isolate = re.split("\.", bassio_nameo)[0]
 
             # translate gene to protein
-            
 
             protein_string = Seq(gene_string).translate()#, generic_dna).translate()
             protein_string = SeqIO.SeqRecord(protein_string, id = bassio_nameo)
