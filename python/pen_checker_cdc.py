@@ -371,7 +371,7 @@ if __name__ == '__main__':
                     correct_length,gene_rower = search_for_gene(ref_gff_tsv, gene, gene_length,
                                                                 files_for_input.tolerance,
                                                                 correct_length, gene_rower)
-                    
+
                 else:
 
                     current_res, current_isolate = hmm_search_for_gene(fasta_file, files_for_input.pbp, aa_dir_name, files_for_input.data_dir)
@@ -477,7 +477,7 @@ if __name__ == '__main__':
             if results_csv.empty:
 
                 print("No Blast results for this isolate:" , bassio_nameo)
-                sysysysysy.exit()
+                sys.exit(1)
                 missing_isolates.append(bassio_nameo)
             else:
                 top_res = results_csv.iloc[0]
