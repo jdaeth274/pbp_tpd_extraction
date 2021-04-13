@@ -55,7 +55,7 @@ def get_options():
     parser.add_argument('--fasta', required=False, help='List of FASTA files (ordered as GFF files)', type = str, default = None)
     parser.add_argument('--pbp', required=True, help='Specify PBP being analysed  (required)', type = str, choices=['pbp1a', 'pbp2b', 'pbp2x','dhfR','folP'])
     parser.add_argument('--gene', required=True, help='Comma-separated list of gene synonyms (required)', type = str)
-    parser.add_argument('--aln', required=True, help='Gene alignment  (required)', type = str)
+    parser.add_argument('--aln', required=False, help='Gene alignment  (required)', type = str)
     parser.add_argument('--tlength', required=True, help='Target length of TPD domain  (required)', type = int)
     parser.add_argument('--tolerance', help='Deviation from expected length allowed', type = int, default = 10)
     parser.add_argument('--data_dir', help='Location of the data directory of package', type = str, default="./data")

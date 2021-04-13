@@ -17,6 +17,8 @@ Activate this environment using
 
 ## Usage ##
 
+### Penicillin resistance ###
+
 For pbp extraction, once in the pbp_tpd_env created from above use the following script command
 to run and extract a csv of the isolate name and the pbp resistance category. 
 
@@ -25,5 +27,20 @@ to run and extract a csv of the isolate name and the pbp resistance category.
 Here the gff_list is a txt file with the location of a gff file on each line.
 The fasta list is complementary to this, with the same fasta file on each line, 
 as corresponds to the gff list.
+
+### Co-trimoxazole resistance ###
+
+This method relies on HMMs to find the _folP_ and _dhfR_ genes within sequences, 
+looking for these genes to find the resistance mutations. Each gene needs to be run
+separately. For _folP_ run:   
+`python python/pen_checker_cdc.py --gff gff_list.txt --pbp folP --gene folP --tlength 2159 --output output.csv --tolerance 100 --data_dir ./data`   
+   
+Then for _dhfR_ run:   
+`python python/pen_checker_cdc.py --gff gff_list.txt --pbp dhfR --gene dhfR --tlength 2159 --output output.csv --tolerance 100 --data_dir ./data`   
+
+
+
+
+
 
 
