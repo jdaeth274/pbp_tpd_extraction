@@ -66,15 +66,15 @@ def get_options():
     return args
 
 def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
-
+    gene_rowz = gene_rower
     if not correct_length:
         correct_length = False
         gene_row = ref_in['attributes'].str.contains(name)
         gene_row_indy = gene_row.where(gene_row == True)
         gene_row_indy = gene_row_indy.index[gene_row_indy == True].tolist()
-        gene_rower = ref_gff_tsv.iloc[gene_row_indy]
-        if gene_rower.empty == False:
-            gene_len = [abs(int(gene_rower.iloc[0,4]) - int(gene_rower.iloc[0,3]))]
+        gene_rowz = ref_gff_tsv.iloc[gene_row_indy]
+        if gene_rowz.empty == False:
+            gene_len = [abs(int(gene_rowz.iloc[0,4]) - int(gene_rowz.iloc[0,3]))]
 
             overhang = [gene_length - tol, gene_length + tol]
 
@@ -84,7 +84,7 @@ def search_for_gene(ref_in,name,gene_length,tol,correct_length,gene_rower):
                 correct_length = False
                 sys.stderr.write('Found gene' + name + ' but wrong length: ' + str(gene_len[0]) + ', expected: ' + str(gene_length) + '\n')
 
-    return correct_length,gene_rower
+    return correct_length,gene_rowz
 
 def get_aln_pos_from_ref(hmm_aln,pos,offset):
     
@@ -355,12 +355,6 @@ if __name__ == '__main__':
         tic_iso_run = time.perf_counter()
         bassio_nameo = os.path.basename(gff_file)
 
-        # if "6187_6#14" not in bassio_nameo:
-        #     continue
-
-
-
-
 
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
@@ -412,6 +406,7 @@ if __name__ == '__main__':
                 if "4021_5#11" in bassio_nameo:
                     print("################ 4021_5#11 #################")
                     print(contig_id)
+                    print(gene_rower)
                 contig_num = contig_number_getter(contig_id)
 
             gene_start = int(gene_rower.iloc[0,3])
