@@ -357,7 +357,11 @@ if __name__ == '__main__':
 
         # if "6187_6#14" not in bassio_nameo:
         #     continue
-        
+
+
+
+
+
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
                                              'attributes'],
@@ -405,6 +409,9 @@ if __name__ == '__main__':
             if "INV200" in bassio_nameo:
                 contig_num = contig_id
             else:
+                if "4021_5#11" in bassio_nameo:
+                    print("################ 4021_5#11 #################")
+                    print(contig_id)
                 contig_num = contig_number_getter(contig_id)
 
             gene_start = int(gene_rower.iloc[0,3])
