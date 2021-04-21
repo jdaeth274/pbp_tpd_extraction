@@ -59,11 +59,11 @@ else
 
     echo "Extracting pbp2b/penA now"
     python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --pbp pbp2b --gene penA,pbp2B,"pbp 2 B","pbp2 B","pbp 2 b", "pbp2 b" --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 650
+    --gff $1 --pbp pbp2b --gene penA,pbp2B,"pbp 2 B","pbp2 B","pbp 2 b","pbp2 b" --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 650
 
     echo "Extracting pbp2x/pbpX now"
     python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --pbp pbp2x --gene pbpX,pbp2X,"pbp 2 X", "pbp2 X", "pbp 2 x", "pbp2 x","pbp2x" --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 500
+    --gff $1 --pbp pbp2x --gene pbpX,pbp2X,"pbp 2 X","pbp2 X","pbp 2 x","pbp2 x","pbp2x" --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 500
 
     ## Create the lists of prots for the Rscript to work on
 

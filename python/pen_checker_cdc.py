@@ -276,6 +276,10 @@ def contig_number_getter(contig_name):
     if "|" in contig_name:
         contig_num = contig_name[-3:]
         contig_num = int(contig_num)
+    elif "NODE" in contig_name:
+        contig_num = re.sub("_length.*$","", contig_name)
+        contig_num = re.sub("NODE_","",contig_num)
+        contig_num = int(contig_num)
     else:
         contig_num = re.sub("^.*[0-9]\.","",contig_name)
         contig_num =int(contig_num)
@@ -302,7 +306,7 @@ if __name__ == '__main__':
 
     gff_files = open(files_for_input.gff, "r")
     gff_lines = gff_files.read().splitlines()
-    
+
 
     fasta_lines = []
     if files_for_input.fasta is None:
