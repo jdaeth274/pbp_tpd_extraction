@@ -303,6 +303,7 @@ if __name__ == '__main__':
     gff_files = open(files_for_input.gff, "r")
     gff_lines = gff_files.read().splitlines()
     
+
     fasta_lines = []
     if files_for_input.fasta is None:
 
@@ -317,6 +318,7 @@ if __name__ == '__main__':
     input_gene_names.append(gene_name)
     input_gene_names.append(gene_name.lower())
     all_gene_names = set(input_gene_names)
+
     gene_length = files_for_input.tlength
 
     if files_for_input.pbp not in ['pbp1a','pbp2b','pbp2x']:
