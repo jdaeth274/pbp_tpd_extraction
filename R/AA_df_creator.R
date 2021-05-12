@@ -122,4 +122,3 @@ if(nrow(missing_rows) > 0){
 
 
 write.csv(amino_acid_db, file = out_csv_name, row.names = FALSE)
-
