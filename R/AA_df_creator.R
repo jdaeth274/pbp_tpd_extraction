@@ -116,7 +116,7 @@ missing_rows <- amino_acid_db[rowSums(is.na(amino_acid_db)) > 0,]
 amino_acid_db <- amino_acid_db[complete.cases(amino_acid_db),]
 
 if(nrow(missing_rows) > 0){
-  writeLines(missing_rows$id, con = "missing_pbps_aa_df_isolates.txt")  
+  writeLines(missing_rows$id, con = "missing_aa_pbps_aa_df_isolates.txt")  
 }
 
 
