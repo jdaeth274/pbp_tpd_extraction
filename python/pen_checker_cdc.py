@@ -345,6 +345,7 @@ if __name__ == '__main__':
     isolate_name = []
     gene_id = []
     missing_isolates = []
+    missing_gff_isolates = []
     skip = False
     toc_setup = time.perf_counter()
     print("Took this long for initial set up: %s" % (toc_setup - tic_setup))
@@ -363,6 +364,7 @@ if __name__ == '__main__':
         
         if ref_gff_tsv['attributes'].isnull().all():
             missing_isolates.append(bassio_nameo)
+            missing_gff_isolates.append(bassio_nameo)
             print(("This isn't a recognised GFF: " + bassio_nameo))
             continue
         
@@ -528,6 +530,9 @@ if __name__ == '__main__':
     if len(missing_isolates) > 0:
         with open(("./missing_" + files_for_input.pbp + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
             myfile.write('\n'.join(missing_isolates) + '\n')
+    if len(missing_gff_isolates) > 0:
+        with open(("./missing_gff_" + files_for_input.pbp + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
+            myfile.write('\n'.join(missing_gff_isolates) + '\n')
     out_df.to_csv(files_for_input.output,
                   index=False)
 
