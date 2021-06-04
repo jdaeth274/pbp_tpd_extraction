@@ -365,8 +365,9 @@ if __name__ == '__main__':
         if ref_gff_tsv['attributes'].isnull().all():
             missing_isolates.append(bassio_nameo)
             missing_gff_isolates.append(bassio_nameo)
-            print(("This isn't a recognised GFF: " + bassio_nameo))
-            continue
+            if files_for_input.pbp in ['pbp1a','pbp2b','pbp2x']:
+                print(("This isn't a recognised GFF: " + bassio_nameo))
+                continue
         
         gene_rower = None
         correct_length = False
