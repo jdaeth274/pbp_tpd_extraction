@@ -424,9 +424,13 @@ rf_model_fitter <- function(input_data, test_data = NULL, test_known = FALSE, in
   if(ranger_use){
     actual_cats <- cat_func(pmen_train_mic$mic, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
     pred_cats <- cat_func(pred_train$predictions, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+    actual_mic_train <- round(2^(pmen_train_mic$mic), digits = 6)
+    pred_mic_train <- round(2^(pred_train$predictions), digits = 6)
   }else{
     actual_cats <- cat_func(pmen_train_mic$mic, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
     pred_cats <- cat_func(pred_train, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+    actual_mic_train <- round(2^(pmen_train_mic$mic), digits = 6)
+    pred_mic_train <- round(2^(pred_train), digits = 6)
   }
   CA_value_trained <- CA_assessment(actual_cats, pred_cats)
   toc()
@@ -438,9 +442,13 @@ rf_model_fitter <- function(input_data, test_data = NULL, test_known = FALSE, in
     if(ranger_use){
       actual_cats <- cat_func(pmen_valid_mic[[1]]$mic, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
       pred_cats <- cat_func(pred_valid$predictions, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+      actual_mic_pred <- round(2^(pmen_valid_mic[[1]]$mic), digits = 6)
+      pred_mic_pred <- round(2^(pred_valid$predictions), digits =6)
     }else{
       actual_cats <- cat_func(pmen_valid_mic[[1]]$mic, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
       pred_cats <- cat_func(pred_valid, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+      actual_mic_pred <- round(2^(pmen_valid_mic[[1]]$mic), digits = 6)
+      pred_mic_pred <- round(2^(pred_valid), digits = 6)
     }
     CA_value_valid <- CA_assessment(actual_cats, pred_cats)
     
@@ -449,12 +457,15 @@ rf_model_fitter <- function(input_data, test_data = NULL, test_known = FALSE, in
     pred_valid <- predict(test_model_run, pmen_valid_mic[[1]])
     if(ranger_use){
       pred_cats <- cat_func(pred_valid$predictions, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+      pred_mic <- round(2^(pred_valid$predictions), digits = 6)
     }else{
       pred_cats <- cat_func(pred_valid, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
+      pred_mic <- round(2^(pred_valid), digits =6 )
     }
     if(test_known){
       actual_cats <- cat_func(pmen_valid_mic[[1]]$mic, S_upper = 0.06, R_lower = 0.12, transform_mic = TRUE)
       CA_value_valid <- CA_assessment(actual_cats, pred_cats)
+      actual_mic <- round(2^(pmen_valid_mic[[1]]$mic), digits = 6)
     }
     
   }
@@ -467,12 +478,27 @@ rf_model_fitter <- function(input_data, test_data = NULL, test_known = FALSE, in
     trained$data <- "Train"
     valid_d$data <- "Valid"
     trained <- bind_rows(trained, valid_d)
+    mic_data_train <- cbind.data.frame(actual_mic_train, pred_mic_train)
+    mic_data_train$data <- "Train"
+    colnames(mic_data_train)[1:2] <- c("actual","pred")
+    mic_data_pred <- cbind.data.frame(actual_mic_pred, pred_mic_pred)
+    mic_data_pred$data <- "Pred"
+    colnames(mic_data_pred)[1:2] <- c("actual","pred")
+    mic_data <- bind_rows(mic_data_train, mic_data_pred)
   }else{
     trained$data <- "Train"
+    mic_data <- cbind.data.frame(actual_mic_train, pred_mic_train)
+    mic_data$data <- "Train"
+    colnames(mic_data)[1:2] <- c("actual","pred")
+    mic_data_pred <- cbind.data.frame(rep(0,length(pred_mic)), pred_mic)
+    colnames(mic_data_pred) <- c("actual","pred")
+    mic_data_pred$data <- "Pred"
+    mic_data <- bind_rows(mic_data, mic_data_pred)
+     
   }
   
   cat(paste("Total time for run:",(end_time - start_time)))
-  return(list(model = test_model_run, tests = trained, valid_preds = pred_cats))
+  return(list(model = test_model_run, tests = trained, valid_preds = pred_cats, mic_data = mic_data))
   
 }
 
@@ -604,6 +630,42 @@ results_testing_plotter <- function(results_df, column_to_use,y_lab, pdf_out_fil
   
 }
 
+mic_tester <- function(mic_compo){
+  ## compare the two mic levels
+  ## get the levels from the actual data 
+  
+  mic_levels <- sort(unique(mic_compo$actual))
+  pred_as_levels <- NULL
+  
+  for(k in 1:nrow(mic_compo)){
+    current_pred <- mic_compo[k,2]
+    new_val <- max(mic_levels[mic_levels <= current_pred])
+    pred_as_levels <- append(pred_as_levels, new_val)
+  }
+  
+  mic_compo$pred_levels <- pred_as_levels
+  
+  ## Do some compos 
+  witcher <- function(x,y){
+    vals_pos <- NULL
+    for(k in x){
+      vals_pos <- append(vals_pos, which(y == k))
+    }
+    return(vals_pos)
+  }
+  
+  dilution_actual <- sapply(mic_compo$actual, witcher, y = mic_levels)
+  dilution_pred <- sapply(mic_compo$pred_levels, witcher, y = mic_levels)
+  
+  mic_compo$dilution_actual <- dilution_actual
+  mic_compo$dilution_pred <- dilution_pred
+  
+  
+  return(mic_compo[mic_compo$data == "Pred", "pred_levels"])
+}
+
+
+
 ###############################################################################
 ## Right, now we'll run on the pmen known data to test fitting to the data ####
 ###############################################################################
@@ -656,6 +718,9 @@ predicted_categories <- cdc_preds$valid_preds
 
 out_df <- cbind.data.frame(whole_aa_data$id, predicted_categories)
 colnames(out_df) <- c("id","penicillin_cat")
+mic_preds <- mic_tester(cdc_preds$mic_data)
+out_df$MIC <- mic_preds
+
 
 write.csv(out_df,
           file = out_csv_name)
