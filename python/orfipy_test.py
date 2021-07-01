@@ -59,9 +59,8 @@ def get_options():
     parser.add_argument('--gff', required=True, help='List of GFF files (required)', type=str)
     parser.add_argument('--fasta', required=False, help='List of FASTA files (ordered as GFF files)', type=str,
                         default=None)
-    parser.add_argument('--pbp', required=True, help='Specify PBP being analysed  (required)', type=str,
+    parser.add_argument('--gene', required=True, help='Specify PBP being analysed  (required)', type=str,
                         choices=['pbp1a', 'pbp2b', 'pbp2x', 'dhfR', 'folP'])
-    parser.add_argument('--gene', required=True, help='Comma-separated list of gene synonyms (required)', type=str)
     parser.add_argument('--aln', required=False, help='Gene alignment  (required)', type=str)
     parser.add_argument('--tlength', required=True, help='Target length of TPD domain  (required)', type=int)
     parser.add_argument('--tolerance', help='Deviation from expected length allowed', type=int, default=10)
@@ -114,8 +113,12 @@ def get_aln_pos_from_ref(hmm_aln, pos, offset):
 
     return (ref_pos - 1)
 
+class seqqer():
+    def __init__(self):
+        self.seq = None
 
-def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir):
+
+def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir, gene_leng, tolerance):
     # data structure
     readingframes = []
 
@@ -197,6 +200,7 @@ def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir):
 
     toc_hmm_run = time.perf_counter()
     print("Printing out the resistance")
+    seq = None
     if gene == 'folP':
         aln_start = get_aln_pos_from_ref(hmm_aln, 57, hmm_offset)
         aln_end = get_aln_pos_from_ref(hmm_aln, 67, hmm_offset)
@@ -239,10 +243,19 @@ def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir):
             print(gff_base + '\tTrimethoprim unknown: ' + str(query_match).upper())
             status = "NA"
 
+    elif gene in ['pbp1a','pbp2b','pbp2x']:
+        aa_seq = hmm_best_hsp.hit
+        if len(aa_seq) < gene_leng - tolerance:
+            seq = seqqer()
+            print("Gene length not long enough has %s needs %s" % (len(aa_seq), gene_leng))
+        else:
+            seq = aa_seq
+        status = None
+
     print("Took this long for ORF finder: %s" % (toc_aa_creator - tic_aa_creator))
     print("Took this long for HMM run: %s" % (toc_hmm_run - tic_hmm_run))
 
-    return status, gff_base
+    return status, gff_base, seq
 
 
 def extract_fasta_from_gff(gff_fn):
@@ -341,19 +354,19 @@ if __name__ == '__main__':
         fasta_lines = open(files_for_input.fasta, "r")
         fasta_lines = fasta_lines.read().splitlines()
 
-    gene_name = files_for_input.pbp
-    input_gene_names = files_for_input.gene.split(',')  # allow a list of alternative names
-    input_gene_names.append(gene_name)
-    input_gene_names.append(gene_name.lower())
-    all_gene_names = set(input_gene_names)
+    gene_name = files_for_input.gene
+    # input_gene_names = files_for_input.gene.split(',')  # allow a list of alternative names
+    # input_gene_names.append(gene_name)
+    # input_gene_names.append(gene_name.lower())
+    # all_gene_names = set(input_gene_names)
 
     gene_length = files_for_input.tlength
 
-    if files_for_input.pbp not in ['pbp1a', 'pbp2b', 'pbp2x']:
-        aa_dir_name = "./" + re.sub(".csv", "", files_for_input.output) + "_aa_dir"
-        if not os.path.exists(aa_dir_name):
-            os.mkdir(aa_dir_name)
-        all_gene_names = [files_for_input.pbp]
+
+    aa_dir_name = "./" + re.sub(".csv", "", files_for_input.output) + "_aa_dir"
+    if not os.path.exists(aa_dir_name):
+        os.mkdir(aa_dir_name)
+    all_gene_names = [files_for_input.gene]
 
     ###############################################################################
     ## So we've loaded up our collection of fastas and our gffs collection, at ####
@@ -375,10 +388,12 @@ if __name__ == '__main__':
     print("Took this long for initial set up: %s" % (toc_setup - tic_setup))
     print("Beginning iso run")
     for k, (gff_file, fasta_file) in enumerate(zip(gff_lines, fasta_lines)):
+
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("On isolate %s of %s" % (k, len(gff_lines)))
         tic_iso_run = time.perf_counter()
         bassio_nameo = os.path.basename(gff_file)
+
 
         ref_gff_tsv = pandas.read_csv(gff_file, sep='\t',
                                       names=['seqid', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase',
@@ -388,158 +403,100 @@ if __name__ == '__main__':
         if ref_gff_tsv['attributes'].isnull().all():
             missing_isolates.append(bassio_nameo)
             missing_gff_isolates.append(bassio_nameo)
-            if files_for_input.pbp in ['pbp1a', 'pbp2b', 'pbp2x']:
+            if files_for_input.gene in ['pbp1a', 'pbp2b', 'pbp2x']:
                 print(("This isn't a recognised GFF: " + bassio_nameo))
                 continue
 
         gene_rower = None
         correct_length = False
-        for gene in all_gene_names:
-            if not correct_length:
-                # print('Searching for name ' + gene)
-                if files_for_input.pbp in ['pbp1a', 'pbp2b', 'pbp2x']:
-                    correct_length, gene_rower = search_for_gene(ref_gff_tsv, gene, gene_length,
-                                                                 files_for_input.tolerance,
-                                                                 correct_length, gene_rower)
 
-                else:
+        current_res, current_isolate,seq = hmm_search_for_gene(fasta_file, files_for_input.gene, aa_dir_name,
+                                                           files_for_input.data_dir, gene_length, files_for_input.tolerance)
 
-                    current_res, current_isolate = hmm_search_for_gene(fasta_file, files_for_input.pbp, aa_dir_name,
-                                                                       files_for_input.data_dir)
-                    gene_id.append(current_res)
-                    isolate_name.append(current_isolate)
-                    skip = True
-                    toc_iso_run = time.perf_counter()
-                    print("Took this long for isolate %s, overall: %s" % (current_isolate, (toc_iso_run - tic_iso_run)))
-                    continue
-                if correct_length:
-                    print('Found gene ' + gene + ' in ' + bassio_nameo + '\n')
+        if gene_name not in ['pbp1a', 'pbp1A', 'pbp2b', 'pbp2B', 'pbp2x', 'pbp2X']:
+            gene_id.append(current_res)
 
-        if skip:
+            isolate_name.append(current_isolate)
+            skip = True
+        toc_iso_run = time.perf_counter()
+        print("Took this long for isolate %s, overall: %s" % (current_isolate, (toc_iso_run - tic_iso_run)))
+        if gene_name not in ['pbp1a','pbp1A','pbp2b','pbp2B','pbp2x','pbp2X']:
             continue
 
-        if gene_rower.empty or not correct_length:
-
-            print("No gene hit in this file:", bassio_nameo)
-            missing_isolates.append(bassio_nameo)
-
-        else:
-
-            # extract hit information
-            contig_id = gene_rower.iloc[0, 0]
-            if "INV200" in bassio_nameo:
-                contig_num = contig_id
-            else:
-                if "4021_5#11" in bassio_nameo:
-                    print("################ 4021_5#11 #################")
-                    print(contig_id)
-                    print(gene_rower)
-                contig_num = contig_number_getter(contig_id)
-
-            gene_start = int(gene_rower.iloc[0, 3])
-            gene_end = int(gene_rower.iloc[0, 4])
-            strand = str(gene_rower.iloc[0, 6])
-
-            correct_contig = False
-            # identify contigs within assembly
-            for record in SeqIO.parse(fasta_file, "fasta"):
-                if "INV200" in bassio_nameo:
-                    current_name = record.id
-                else:
-                    current_name = contig_number_getter(record.id)
-
-                if current_name == contig_num:
-                    correct_contig = record.seq
-                    break
-
-            if isinstance(correct_contig, bool):
-                print("No contig name match in gff")
-                sys.exit()
-            # identify gene sequence within contig
-            gene_string = str(correct_contig[(gene_start - 1):gene_end])
-
-            if strand == "-":
-                reverso = Seq(gene_string)  # , generic_dna)
-
-                gene_string = str(reverso.reverse_complement())
-
-            isolate = re.split("\.", bassio_nameo)[0]
-
-            # translate gene to protein
-
-            protein_string = Seq(gene_string).translate()  # , generic_dna).translate()
-            protein_string = SeqIO.SeqRecord(protein_string, id=bassio_nameo)
 
             # write protein sequence out for BLAST
-            with open((bassio_nameo + files_for_input.pbp + ".fasta"), "w+") as output_handle:
-                SeqIO.write(protein_string, output_handle, "fasta")
+        if seq.seq == None:
+            continue
+        isolate = re.split("\.", bassio_nameo)[0]
+        with open((bassio_nameo + files_for_input.gene + ".fasta"), "w+") as output_handle:
+            SeqIO.write(seq, output_handle, "fasta")
 
             #######################################################################
             ## Now we've got our protein string we'll use blast to search for the #
             ## closest hit in the cdc alignment file ##############################
             #######################################################################
 
-            protein_fasta = bassio_nameo + files_for_input.pbp + ".fasta"
-            protein_csv = bassio_nameo + files_for_input.pbp + ".csv"
+        protein_fasta = bassio_nameo + files_for_input.gene + ".fasta"
+        protein_csv = bassio_nameo + files_for_input.gene + ".csv"
 
-            align_path = files_for_input.aln
-            basename_aligno = os.path.basename(files_for_input.aln)
-            basename_blastdb = basename_aligno + ".phr"
+        align_path = files_for_input.aln
+        basename_aligno = os.path.basename(files_for_input.aln)
+        basename_blastdb = basename_aligno + ".phr"
 
-            if not os.path.isfile(basename_blastdb):
-                db_command = "makeblastdb -in " + align_path + " -dbtype prot -out " + basename_aligno
-                subprocess.call(db_command, shell=True)
+        if not os.path.isfile(basename_blastdb):
+            db_command = "makeblastdb -in " + align_path + " -dbtype prot -out " + basename_aligno
+            subprocess.call(db_command, shell=True)
 
-            blasty_cmd = "blastp -query " + protein_fasta + " -db " + basename_aligno + " -out " + protein_csv + " -outfmt 10"
-            subprocess.call(blasty_cmd, shell=True)
+        blasty_cmd = "blastp -query " + protein_fasta + " -db " + basename_aligno + " -out " + protein_csv + " -outfmt 10"
+        subprocess.call(blasty_cmd, shell=True)
 
-            #######################################################################
-            ## Now we've got the blast results, lets extract the top hit and then #
-            ## assign this isolates name as that particular allele type ###########
-            #######################################################################
+        #######################################################################
+        ## Now we've got the blast results, lets extract the top hit and then #
+        ## assign this isolates name as that particular allele type ###########
+        #######################################################################
 
-            results_csv = pandas.read_csv(protein_csv,
-                                          names=['qid', 'sid', 'pid', 'align',
-                                                 'gap', 'mismatch', 'qstart', 'qend',
-                                                 'sstart', 'send', 'eval', 'bitscore'])
+        results_csv = pandas.read_csv(protein_csv,
+                                      names=['qid', 'sid', 'pid', 'align',
+                                             'gap', 'mismatch', 'qstart', 'qend',
+                                             'sstart', 'send', 'eval', 'bitscore'])
 
-            results_csv = results_csv.sort_values(['bitscore'], ascending=False)
-            if results_csv.empty:
+        results_csv = results_csv.sort_values(['bitscore'], ascending=False)
+        if results_csv.empty:
 
-                print("No Blast results for this isolate:", bassio_nameo)
-                sys.exit(1)
-                missing_isolates.append(bassio_nameo)
+            print("No Blast results for this isolate:", bassio_nameo)
+            sys.exit(1)
+            missing_isolates.append(bassio_nameo)
+        else:
+            top_res = results_csv.iloc[0]
+            sstart = top_res.iloc[6] - 1
+            send = top_res.iloc[7]
+
+            if files_for_input.gene == "pbp1a":
+                tpd_start = sstart
+                tpd_end = send  # sstart + 252
+                tpd_lab = "pbp1a"
+            elif files_for_input.gene == "pbp2b":
+                tpd_start = sstart
+                tpd_end = send  # sstart + 277
+                tpd_lab = "pbp2b"
+            elif files_for_input.gene == "pbp2x":
+                tpd_start = sstart  # sstart + 60
+                tpd_end = send  # tpd_start + 299
+                tpd_lab = "pbp2x"
+                if isolate == "11511_7#11":
+                    print(sstart, tpd_start, "Now for the ends \n", send, tpd_end)
+                    print(top_res)
             else:
-                top_res = results_csv.iloc[0]
-                sstart = top_res.iloc[6] - 1
-                send = top_res.iloc[7]
+                sys.exit(
+                    "For TPD extraction please use one of the three following gene names: pbp1a, pbp2b or pbp2x")
 
-                if files_for_input.pbp == "pbp1a":
-                    tpd_start = sstart
-                    tpd_end = send  # sstart + 252
-                    tpd_lab = "pbp1a"
-                elif files_for_input.pbp == "pbp2b":
-                    tpd_start = sstart
-                    tpd_end = send  # sstart + 277
-                    tpd_lab = "pbp2b"
-                elif files_for_input.pbp == "pbp2x":
-                    tpd_start = sstart  # sstart + 60
-                    tpd_end = send  # tpd_start + 299
-                    tpd_lab = "pbp2x"
-                    if isolate == "11511_7#11":
-                        print(sstart, tpd_start, "Now for the ends \n", send, tpd_end)
-                        print(top_res)
-                else:
-                    sys.exit(
-                        "For TPD extraction please use one of the three following gene names: pbp1a, pbp2b or pbp2x")
-
-                isolate_name.append(isolate)
-                top_pbp_hit = process_pbp(isolate, protein_fasta, tpd_start, tpd_end, tpd_lab, results_csv, k)
-                gene_id.append(top_pbp_hit)
+            isolate_name.append(isolate)
+            top_pbp_hit = process_pbp(isolate, protein_fasta, tpd_start, tpd_end, tpd_lab, results_csv, k)
+            gene_id.append(top_pbp_hit)
 
     out_df = pandas.DataFrame()
     out_df['isolate_id'] = pandas.Series(isolate_name)
-    if files_for_input.pbp in ['pbp1a', 'pbp2b', 'pbp2x']:
+    if files_for_input.gene in ['pbp1a', 'pbp2b', 'pbp2x']:
         out_df['top_id'] = pandas.Series(gene_id, index=out_df.index)
     else:
         out_df['Resistance'] = pandas.Series(gene_id, index=out_df.index)
@@ -549,10 +506,10 @@ if __name__ == '__main__':
     # os.system(rm_command)
 
     if len(missing_isolates) > 0:
-        with open(("./missing_" + files_for_input.pbp + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
+        with open(("./missing_" + files_for_input.gene + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
             myfile.write('\n'.join(missing_isolates) + '\n')
     if len(missing_gff_isolates) > 0:
-        with open(("./missing_gff_" + files_for_input.pbp + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
+        with open(("./missing_gff_" + files_for_input.gene + "_ids.txt"), mode='wt', encoding='utf-8') as myfile:
             myfile.write('\n'.join(missing_gff_isolates) + '\n')
     out_df.to_csv(files_for_input.output,
                   index=False)

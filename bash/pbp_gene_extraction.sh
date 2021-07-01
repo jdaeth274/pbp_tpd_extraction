@@ -23,16 +23,16 @@ then
     else
     ## Lets run through the pbp gene getting pbp1a, 2b 2x
     echo "Extracting pbp1a/ponA now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp1a --gene ponA,pbp1A --aln "${datadir}pbp1a.faa" --tlength 2159 --output pbp1a_cdc_mic_type.csv --tolerance 100
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp1a --aln "${datadir}pbp1a.faa" --tlength 720 --output pbp1a_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
 
     echo "Extracting pbp2b/penA now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp2b --gene penA,pbp2B --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 100
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp2b --aln "${datadir}pbp2b.faa" --tlength 681 --output pbp2b_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
 
     echo "Extracting pbp2x/pbpX now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --fasta $2 --pbp pbp2x --gene pbpX,pbp2X --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 100
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp2x --aln "${datadir}pbp2x.faa" --tlength 751 --output pbp2x_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
 
     ## Create the lists of prots for the Rscript to work on
 
@@ -54,17 +54,16 @@ else
   echo "non interactive"
   ## Lets run through the pbp gene getting pbp1a, 2b 2x
     echo "Extracting pbp1a/ponA now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --pbp pbp1a --gene ponA,pbp1A,"pbp 1 A","pbp1 A","pbp 1 a","pbp1 a" --aln "${datadir}pbp1a.faa" --tlength 2159 --output pbp1a_cdc_mic_type.csv --tolerance 500
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp1a --aln "${datadir}pbp1a.faa" --tlength 720 --output pbp1a_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
 
     echo "Extracting pbp2b/penA now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --pbp pbp2b --gene penA,pbp2B,"pbp 2 B","pbp2 B","pbp 2 b","pbp2 b" --aln "${datadir}pbp2b.faa" --tlength 2042 --output pbp2b_cdc_mic_type.csv --tolerance 650
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp2b --aln "${datadir}pbp2b.faa" --tlength 681 --output pbp2b_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
 
     echo "Extracting pbp2x/pbpX now"
-    python "${pythondir}pen_checker_cdc.py" \
-    --gff $1 --pbp pbp2x --gene pbpX,pbp2X,"pbp 2 X","pbp2 X","pbp 2 x","pbp2 x","pbp2x" --aln "${datadir}pbp2x.faa" --tlength 2252 --output pbp2x_cdc_mic_type.csv --tolerance 500
-
+    python "${pythondir}orfipy_test.py" \
+    --gff $1 --fasta $2 --gene pbp2x --aln "${datadir}pbp2x.faa" --tlength 751 --output pbp2x_cdc_mic_type.csv --tolerance 100 --data_dir "${datadir}"
     ## Create the lists of prots for the Rscript to work on
 
     ls -d $PWD/*pbp1a.prot > pbp1a_prot_list
