@@ -264,16 +264,16 @@ if __name__ == '__main__':
             with open((isolate + "_pbp2x" + ".prot"), "w+") as output_handle:
                 SeqIO.write(seq2x, output_handle, "fasta")
 
-        pbp1a_cat = "ls -d $PWD/*pbp1a.prot > pbp1a_prot_list"
-        pbp2b_cat = "ls -d $PWD/*pbp2b.prot > pbp2b_prot_list"
-        pbp2x_cat = "ls -d $PWD/*pbp2x.prot > pbp2x_prot_list"
+    pbp1a_cat = "ls -d $PWD/*pbp1a.prot > pbp1a_prot_list"
+    pbp2b_cat = "ls -d $PWD/*pbp2b.prot > pbp2b_prot_list"
+    pbp2x_cat = "ls -d $PWD/*pbp2x.prot > pbp2x_prot_list"
 
-        subprocess.run(pbp1a_cat, shell=True)
-        subprocess.run(pbp2b_cat, shell=True)
-        subprocess.run(pbp2x_cat, shell=True)
+    subprocess.run(pbp1a_cat, shell=True)
+    subprocess.run(pbp2b_cat, shell=True)
+    subprocess.run(pbp2x_cat, shell=True)
 
-        aa_df_creator = "Rscript --vanilla " + files_for_input.data_dir + "../R/full_seq_AA.R" + " pbp1a_prot_list pbp2b_prot_list pbp2x_prot_list " + files_for_input.output + ".csv"
-        subprocess.run(aa_df_creator, shell=True)
+    aa_df_creator = "Rscript --vanilla " + files_for_input.data_dir + "../R/full_seq_AA.R" + " pbp1a_prot_list pbp2b_prot_list pbp2x_prot_list " + files_for_input.output + ".csv"
+    subprocess.run(aa_df_creator, shell=True)
 
 
 
