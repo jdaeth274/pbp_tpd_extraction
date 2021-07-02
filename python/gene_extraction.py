@@ -29,7 +29,7 @@ def get_options():
     parser = argparse.ArgumentParser(description=purpose,
                                      prog='pen_checker_cdc.py')
 
-    parser.add_argument('--gff', required=True, help='List of GFF files (required)', type=str)
+    parser.add_argument('--seqs', required=True, help='List of GFF files (required)', type=str)
     parser.add_argument('--data_dir', help='Location of the data directory of package', type=str, default="./data")
     parser.add_argument('--output', required=True, help='Prefix of output files  (required)', type=str)
     parser.add_argument('--cores', help='Number of cores available to run (default num_cores -1)', type=int, default=None)
@@ -56,7 +56,7 @@ def hmm_search_for_gene(fasta, data_dir, num_cores):
 
     ## run orfipy ORF finder on the fasta file
 
-    orfipy_run = "orfipy " + fasta + " --pep tmp_out_pep.fa --outdir tmp_orfi_out --min 50 --procs " + num_cores
+    orfipy_run = "orfipy " + fasta + " --pep tmp_out_pep.fa --outdir tmp_orfi_out --min 50 --procs " + str(num_cores)
 
     subprocess.run(orfipy_run, shell=True)
 
@@ -201,12 +201,15 @@ if __name__ == '__main__':
         num_cores = files_for_input.cores
 
 
-    gff_files = open(files_for_input.gff, "r")
+    gff_files = open(files_for_input.seqs, "r")
     gff_lines = gff_files.read().splitlines()
 
-    fasta_lines = []
-    for gff in gff_lines:
-        fasta_lines.append(extract_fasta_from_gff(gff))
+    if gff_lines[0].endswith(".gff"):
+        fasta_lines = []
+        for gff in gff_lines:
+            fasta_lines.append(extract_fasta_from_gff(gff))
+    else:
+        fasta_lines = gff_lines
     # else:
     #     fasta_lines = open(files_for_input.fasta, "r")
     #     fasta_lines = fasta_lines.read().splitlines()
