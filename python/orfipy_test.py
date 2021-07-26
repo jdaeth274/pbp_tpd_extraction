@@ -56,11 +56,11 @@ def get_options():
     parser = argparse.ArgumentParser(description=purpose,
                                      prog='pen_checker_cdc.py')
 
-    parser.add_argument('--gff', required=True, help='List of GFF files (required)', type=str)
-    parser.add_argument('--fasta', required=False, help='List of FASTA files (ordered as GFF files)', type=str,
-                        default=None)
+    parser.add_argument('--seqs', required=True, help='List of seqeuence files (GFF or FASTA) (required)', type=str)
     parser.add_argument('--gene', required=True, help='Specify PBP being analysed  (required)', type=str,
                         choices=['pbp1a', 'pbp2b', 'pbp2x', 'dhfR', 'folP'])
+    parser.add_argument('--cores', required=False, help='Number of cores to use for orfipy',
+                        default=None)
     parser.add_argument('--aln', required=False, help='Gene alignment  (required)', type=str)
     parser.add_argument('--tlength', required=True, help='Target length of TPD domain  (required)', type=int)
     parser.add_argument('--tolerance', help='Deviation from expected length allowed', type=int, default=10)
@@ -118,7 +118,7 @@ class seqqer():
         self.seq = None
 
 
-def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir, gene_leng, tolerance):
+def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir, gene_leng, tolerance, num_cores):
     # data structure
     readingframes = []
 
@@ -130,7 +130,7 @@ def hmm_search_for_gene(fasta, gene, aa_dir_name, data_dir, gene_leng, tolerance
 
     ## run orfipy ORF finder on the fasta file
 
-    orfipy_run = "orfipy " + fasta + " --pep tmp_out_pep.fa --outdir tmp_orfi_out --min 50 --procs 1 "
+    orfipy_run = "orfipy " + fasta + " --pep tmp_out_pep.fa --outdir tmp_orfi_out --min 50 --procs " + str(num_cores)
 
     subprocess.run(orfipy_run, shell=True)
 
@@ -341,18 +341,20 @@ if __name__ == '__main__':
     ## gene of interest and then from there extract this sequence and compare it ##
     ## to the gene alignment to test which is the right gene ######################
     ###############################################################################
-
-    gff_files = open(files_for_input.gff, "r")
+    gff_files = open(files_for_input.seqs, "r")
     gff_lines = gff_files.read().splitlines()
 
-    fasta_lines = []
-    if files_for_input.fasta is None:
-
+    if gff_lines[0].endswith(".gff"):
+        fasta_lines = []
         for gff in gff_lines:
             fasta_lines.append(extract_fasta_from_gff(gff))
     else:
-        fasta_lines = open(files_for_input.fasta, "r")
-        fasta_lines = fasta_lines.read().splitlines()
+        fasta_lines = gff_lines
+
+    if files_for_input.cores is None:
+        num_cores = mp.cpu_count() - 1
+    else:
+        num_cores = files_for_input.cores
 
     gene_name = files_for_input.gene
     # input_gene_names = files_for_input.gene.split(',')  # allow a list of alternative names
@@ -411,7 +413,8 @@ if __name__ == '__main__':
         correct_length = False
 
         current_res, current_isolate,seq = hmm_search_for_gene(fasta_file, files_for_input.gene, aa_dir_name,
-                                                           files_for_input.data_dir, gene_length, files_for_input.tolerance)
+                                                           files_for_input.data_dir, gene_length, files_for_input.tolerance,
+                                                               num_cores)
 
         if gene_name not in ['pbp1a', 'pbp1A', 'pbp2b', 'pbp2B', 'pbp2x', 'pbp2X']:
             gene_id.append(current_res)
