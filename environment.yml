@@ -1,4 +1,4 @@
-name: pbp_tpd_env
+name: orfipy_pbp_tpd
 channels:
 - conda-forge
 - bioconda
@@ -10,6 +10,7 @@ dependencies:
 - argparse
 - blast
 - hmmer
+- orfipy
 - r-randomForest
 - r-seqinr
 - r-protr
