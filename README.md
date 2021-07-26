@@ -18,25 +18,28 @@ Activate this environment using
 ## Usage ##
 
 ### Penicillin resistance ###
+To extract the pbp genes (_pbp1a, pbp2b, pbp2x_) Transpeptidase domains (TPDs) and run the RF prediction model use the 
+following command: 
 
-For pbp extraction, once in the pbp_tpd_env created from above use the following script command
-to run and extract a csv of the isolate name and the pbp resistance category. 
+`bash pbp_gene_extraction.sh --fasta-list seqeunce_list.txt --gene pbp --whole-gene N --out-prefix test_out --threads 1`
 
-`bash ./bash/pbp_gene_extraction.sh gff_list.txt fasta_list.txt out_csv_name.csv`
+This will produce a directory containing the extracted proteins, a csv file `aa_df.csv` of the extracted TPD domains 
+per isolate for the three genes, a prediction csv and separate files containing the isolates with missing domains for 
+each gene. 
 
-Here the gff_list is a txt file with the location of a gff file on each line.
-The fasta list is complementary to this, with the same fasta file on each line, 
-as corresponds to the gff list.
+To extract the whole gene seqeunces for the pbp genes only use:
+
+`bash pbp_gene_extraction.sh --fasta-list seqeunce_list.txt --gene pbp --whole-gene Y --out-prefix test_out --threads 1`
 
 ### Co-trimoxazole resistance ###
 
-This method relies on HMMs to find the _folP_ and _dhfR_ genes within sequences, 
-looking for these genes to find the resistance mutations. Each gene needs to be run
-separately. For _folP_ run:   
-`python python/pen_checker_cdc.py --gff gff_list.txt --pbp folP --gene folP --tlength 2159 --output output.csv --tolerance 100 --data_dir ./data`   
-   
-Then for _dhfR_ run:   
-`python python/pen_checker_cdc.py --gff gff_list.txt --pbp dhfR --gene dhfR --tlength 2159 --output output.csv --tolerance 100 --data_dir ./data`   
+To extract the resistance profiles for trimethoprim use the following command: 
+
+`bash pbp_gene_extraction.sh --fasta-list seqeunce_list.txt --gene dhfr --whole-gene N --out-prefix test_out --threads 1`
+
+To extract the resistance profiles for sulfamethoxazole use the following command:
+
+`bash pbp_gene_extraction.sh --fasta-list seqeunce_list.txt --gene folp --whole-gene N --out-prefix test_out --threads 1`
 
 
 
